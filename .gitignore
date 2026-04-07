@@ -1,0 +1,30 @@
+### Java & Maven ###
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+
+### IntelliJ IDEA ###
+.idea/
+*.iml
+out/
+gen/
+.idea_modules/
+
+### H2 Database (非常重要) ###
+# 我们只跟踪建表脚本，不跟踪具体的数据库文件
+# 假设你在 application.properties 中配置的路径包含 data 文件夹
+/data/
+*.mv.db
+*.trace.db
+*.lock.db
+
+### Operating System ###
+.DS_Store
+Thumbs.db
+
+### Environment & Secrets ###
+.env
+.env.local
