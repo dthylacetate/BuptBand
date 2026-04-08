@@ -8,4 +8,9 @@ public interface AppUserRepository extends JpaRepository<AppUser,Long>
 {
     //继承了JpaRepository 后，自动拥有了增删改查的所有功能
 
+    boolean existsByNickname(String nickname);
+
+    boolean existsByEmail(String email);
 }
+
+

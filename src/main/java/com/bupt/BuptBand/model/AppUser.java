@@ -20,8 +20,14 @@ public class AppUser
     @GeneratedValue(strategy = GenerationType.IDENTITY)     //自增ID
     private Long id;
 
-    @Column(nullable = false)       //不能为空
-    private String nickname;        //昵称
+    @Column(unique = true, nullable = false)
+    private String nickname; // 登录账号，必须唯一
+    @Column(unique = true, nullable = false)
+    private String email;    // 邮箱，也必须唯一
+    @Column(nullable = false)
+    private String password; // 存储加密后的哈希值
+
+    //@Column(nullable = false)       //不能为空
     private String instrument;      //主打乐器
     private String campus;          //校区
     private Integer playingYears;   //琴龄
