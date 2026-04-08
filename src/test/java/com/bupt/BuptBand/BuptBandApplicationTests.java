@@ -44,17 +44,18 @@ class BuptBandApplicationTests
 	@Test
 	void testCreateRecruitment() throws Exception
 	{
-		// 1. 准备数据：必须是一个数据库里真实存在的 publisherId
-		// 因为你的 DataInitializer 会在启动时自动创建 ID 为 1 和 2 的用户
+		// 1准备数据：必须是一个数据库里真实存在的 publisherId
+		// 因为 DataInitializer 会在启动时自动创建 ID 为 1 和 2 的用户
 		String recruitmentJson = """
         {
-            "title": "北邮首支后摇乐队招键盘",
+            "title": "北邮首支前摇乐队招键盘",
             "position": "Keyboard",
             "style": "Post-Rock",
             "requirements": "会调音色，不排斥氛围铺底",
-            "detail": "目前成员都是大二大三的，氛围很好",
-            "contactInformation": "微信: xitucheng_player",
-            "publisherId": 1
+            "detail": "目前成员都是大一大三的，氛围很好",
+            "contactInformation": "微信: 闹麻了",
+            "publisherId": 1,
+            "type":"BAND_SEEKING_MEMBER"
         }
         """;
 
@@ -64,10 +65,9 @@ class BuptBandApplicationTests
 						.content(recruitmentJson))
 				// 3. 验证结果
 				.andExpect(status().isCreated()) // 期望返回 201
-				.andExpect(jsonPath("$.title").value("北邮首支后摇乐队招键盘"))
+				.andExpect(jsonPath("$.title").value("北邮首支前摇乐队招键盘"))
 				// 4. 核心验证：检查返回的 DTO 里，昵称是否根据 ID 自动查出来了
 				.andExpect(jsonPath("$.publisherNickname").exists());
 	}
-
 
 }

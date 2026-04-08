@@ -18,6 +18,8 @@ public class Recruitment
     private String requirements;   // 要求
     private String detail;          //详细介绍
     private String contactInformation;       //联系方式
+    @Enumerated(EnumType.STRING)
+    private RecruitmentType type;   // 帖子类型
 
     // 核心：多对一关联
     @ManyToOne(fetch = FetchType.LAZY) // 懒加载，只有用到用户信息时才会去查数据库，性能更好

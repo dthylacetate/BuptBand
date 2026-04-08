@@ -3,6 +3,7 @@ package com.bupt.BuptBand.controller;
 import com.bupt.BuptBand.dto.RecruitmentCreateRequest;
 import com.bupt.BuptBand.dto.RecruitmentDTO;
 import com.bupt.BuptBand.model.Recruitment;
+import com.bupt.BuptBand.model.RecruitmentType;
 import com.bupt.BuptBand.service.RecruitmentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,10 +39,12 @@ public class RecruitmentController
 
     // 查看所有招募帖的接口
     @GetMapping
-    public List<RecruitmentDTO> getAllRecruitments()
+    public List<RecruitmentDTO> getRecruitments(
+            @RequestParam(required = false) RecruitmentType type,
+            @RequestParam(required = false) String position)
     {
-        // 获取所有实体并统一转成 DTO 列表
-        return recruitmentService.findAllRecruitments()
+        // 调用带参数的筛选方法
+        return recruitmentService.filterRecruitments(type, position)
                 .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
