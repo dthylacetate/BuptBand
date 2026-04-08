@@ -1,5 +1,6 @@
 package com.bupt.BuptBand.controller;
 
+import com.bupt.BuptBand.dto.LoginRequest;
 import com.bupt.BuptBand.dto.RegistrationRequest;
 import com.bupt.BuptBand.model.AppUser;
 import com.bupt.BuptBand.service.AppUserService;
@@ -46,6 +47,26 @@ public class UserController
         AppUser savedUser = appUserService.registerUser(request);
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
     }
+
+
+
+    // 在 UserController 中增加
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody LoginRequest request)
+    {
+        try
+        {
+            String token = appUserService.login(request);
+            // 把生成的 Token 甩给前端
+            return ResponseEntity.ok(token);
+        }
+        catch (RuntimeException e)
+        {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
+    }
+
+
 
     @GetMapping
     public List<AppUser> getAllUsers()

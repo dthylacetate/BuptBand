@@ -1,8 +1,10 @@
 package com.bupt.BuptBand.service;
 
+import com.bupt.BuptBand.dto.LoginRequest;
 import com.bupt.BuptBand.dto.RegistrationRequest;
 import com.bupt.BuptBand.model.AppUser;
 import com.bupt.BuptBand.repository.AppUserRepository;
+import com.bupt.BuptBand.util.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -14,15 +16,17 @@ public class AppUserService
     private final AppUserRepository appUserRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
-
+    private final JwtUtil jwtUtil;
     // 构造器注入三个零件
     public AppUserService(AppUserRepository appUserRepository,
                           EmailService emailService,
-                          PasswordEncoder passwordEncoder)
+                          PasswordEncoder passwordEncoder,
+                          JwtUtil jwtUtil)
     {
         this.appUserRepository = appUserRepository;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
     }
 
 
@@ -61,6 +65,28 @@ public class AppUserService
 
         return appUserRepository.save(newUser);
     }
+
+
+
+    // 登录
+    public String login(LoginRequest request)
+    {
+        //查找用户
+        AppUser user = appUserRepository.findByNickname(request.getNickname())
+                .orElseThrow(() -> new RuntimeException("错误：该乐手尚未注册"));
+
+        // 校验密码（注意：不能用 ==，必须用 matches 方法）
+        // matches(明文密码, 数据库里的加密密码)
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword()))
+        {
+            throw new RuntimeException("错误：密码不正确");
+        }
+
+
+        return jwtUtil.generateToken(user.getNickname());
+    }
+
+
 
     public List<AppUser> findAllUsers()
     {

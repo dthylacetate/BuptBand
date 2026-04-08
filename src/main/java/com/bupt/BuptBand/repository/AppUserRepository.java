@@ -3,6 +3,9 @@ package com.bupt.BuptBand.repository;
 import com.bupt.BuptBand.model.AppUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
 @Repository
 public interface AppUserRepository extends JpaRepository<AppUser,Long>
 {
@@ -11,6 +14,8 @@ public interface AppUserRepository extends JpaRepository<AppUser,Long>
     boolean existsByNickname(String nickname);
 
     boolean existsByEmail(String email);
+
+    Optional<AppUser> findByNickname(String nickname);
 }
 
 
