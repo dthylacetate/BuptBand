@@ -41,10 +41,11 @@ public class RecruitmentController
     @GetMapping
     public List<RecruitmentDTO> getRecruitments(
             @RequestParam(required = false) RecruitmentType type,
-            @RequestParam(required = false) String position)
+            @RequestParam(required = false) String position,
+            @RequestParam(required = false) String keyword)
     {
         // 调用带参数的筛选方法
-        return recruitmentService.filterRecruitments(type, position)
+        return recruitmentService.filterRecruitments(type, position,keyword)
                 .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -61,7 +62,7 @@ public class RecruitmentController
         dto.setRequirements(recruitment.getRequirements());
         dto.setDetail(recruitment.getDetail());
         dto.setContactInformation(recruitment.getContactInformation());
-
+        dto.setType(recruitment.getType());
         // 把Publisher对象简化成一个简单的昵称字符串
         if (recruitment.getPublisher() != null)
         {

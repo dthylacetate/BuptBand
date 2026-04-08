@@ -27,27 +27,43 @@ public class RecruitmentService
     }
 
 
-    public List<Recruitment> filterRecruitments(RecruitmentType type, String position)
+    public List<Recruitment> filterRecruitments(RecruitmentType type, String position, String keyword)
     {
-        // 这里使用了 Lambda 表达式实现 Specification 接口
         return recruitmentRepository.findAll((root, query, criteriaBuilder) ->
         {
-            // 这里的 Predicate 必须是 jakarta.persistence.criteria.Predicate
             List<Predicate> predicates = new ArrayList<>();
 
-            // 1. 类型筛选
+            // 1. 原有的精确筛选 (AND 关系)
             if (type != null)
             {
                 predicates.add(criteriaBuilder.equal(root.get("type"), type));
             }
-
-            // 2. 位置/乐器筛选
             if (position != null && !position.isEmpty() && !position.equalsIgnoreCase("全部"))
             {
                 predicates.add(criteriaBuilder.equal(root.get("position"), position));
             }
 
-            // 最终合并所有条件
+            // 2. 新增的全局模糊搜索 (OR 关系)
+            if (keyword != null && !keyword.trim().isEmpty())
+            {
+                String likePattern = "%" + keyword + "%"; // 构造模糊匹配字符串
+
+                // 这里需要创建一个“内部 OR 组”
+                Predicate titlePredicate = criteriaBuilder.like(root.get("title"), likePattern);
+                Predicate detailPredicate = criteriaBuilder.like(root.get("detail"), likePattern);
+                Predicate stylePredicate = criteriaBuilder.like(root.get("style"), likePattern);
+
+                // 高级操作：搜索关联表中的发布者昵称
+                // 我们需要 join 进来 publisher 实体
+                Predicate nicknamePredicate = criteriaBuilder.like(root.join("publisher").get("nickname"), likePattern);
+
+                // 把这些模糊搜索条件用 OR 连起来
+                Predicate searchPredicate = criteriaBuilder.or(titlePredicate, detailPredicate, stylePredicate, nicknamePredicate);
+
+                // 把这整个 OR 块作为一条 AND 条件加入主列表
+                predicates.add(searchPredicate);
+            }
+
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         });
     }
