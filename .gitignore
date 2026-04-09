@@ -1,42 +1,31 @@
-HELP.md
-target/
-.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+# --- 系统文件 ---
+.DS_Store
+Thumbs.db
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+# --- 后端 (backend) 屏蔽 ---
+backend/target/
+backend/.mvn/
+backend/*.jar
+backend/*.war
 
-### IntelliJ IDEA ###
-.idea
-*.iws
+# --- 前端 (frontend) 屏蔽 ---
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/*.local
+frontend/.vscode/
+
+# --- IDE 配置文件 (根目录及子目录) ---
+.idea/
+.vscode/
 *.iml
+*.iws
 *.ipr
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### VS Code ###
-.vscode/
-
-# 屏蔽存放 H2 数据库的文件夹
-/data/
-
-# 屏蔽所有以 .db 结尾的 H2 临时文件
+# --- 数据库与日志 ---
+data/
 *.db
-
-# 如果有日志文件也可以顺便屏蔽
 *.log
+
+# --- 原有的通用屏蔽 ---
+HELP.md
