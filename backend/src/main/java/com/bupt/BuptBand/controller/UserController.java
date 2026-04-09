@@ -89,6 +89,18 @@ public class UserController
 
 
 
+    @Operation(summary = "获取当前登录用户信息", description = "用于个人中心页面初始化展示")
+    @GetMapping("/me")
+    public ResponseEntity<AppUser> getMyProfile() {
+        // 同样从上下文中拿当前人的昵称
+        String currentNickname = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        AppUser user = appUserService.findByNickname(currentNickname); // 假设你在 Service 里有这个方法
+        return ResponseEntity.ok(user);
+    }
+
+
+
+
 
 
     @GetMapping

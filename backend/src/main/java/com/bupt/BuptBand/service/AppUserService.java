@@ -117,7 +117,11 @@ public class AppUserService
     }
 
 
-
+    public AppUser findByNickname(String nickname) {
+        //
+        return appUserRepository.findByNickname(nickname)
+                .orElseThrow(() -> new RuntimeException("没找到该乐手的信息喵"));
+    }
 
 
 

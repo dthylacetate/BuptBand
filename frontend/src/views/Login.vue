@@ -37,7 +37,7 @@ const handleLogin = async () => {
     
     // 💡 调试秘籍：你可以先加一行打印，看看后端回来的到底是什么
     console.log('登录成功后的返回结果:', res)
-
+    localStorage.setItem('token', res)
     // 情况 A：如果后端直接回的就是 Token 字符串
     localStorage.setItem('token', res) 
     
