@@ -116,6 +116,7 @@ public class RecruitmentController
         if (recruitment.getPublisher() != null)
         {
             dto.setPublisherNickname(recruitment.getPublisher().getNickname());
+            dto.setPublisherAvatar(recruitment.getPublisher().getAvatarUrl());
         }
 
         return dto;

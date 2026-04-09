@@ -57,9 +57,18 @@
               <p class="info-line"><strong>风格：</strong>{{ item.style }}</p>
               <p class="detail-text">{{ item.detail }}</p>
             </div>
+            
             <div class="footer">
-              <span>👤 {{ item.publisherNickname || '匿名乐手' }}</span>
-              <span class="contact">📞 点击查看联系方式</span>
+              <div class="publisher-info">
+                <el-avatar 
+                  :size="24" 
+                  :src="item.publisherAvatar ? serverRoot + item.publisherAvatar : ''"
+                  icon="User"
+                  class="mini-avatar"
+                />
+                <span class="nickname">{{ item.publisherNickname || '匿名乐手' }}</span>
+              </div>
+              <span class="contact-hint">查看详情</span>
             </div>
           </el-card>
         </el-col>
@@ -139,6 +148,10 @@ const recruitments = ref([])
 const showAddDialog = ref(false)
 const searchQuery = ref({ instrument: '', keyword: '' })
 
+// ⚡️ 环境变量与路径处理
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
+const serverRoot = apiUrl.replace('/api', '');
+
 // 初始表单状态
 const addForm = ref({
   title: '',
@@ -213,12 +226,9 @@ onMounted(fetchRecruitments)
   margin-bottom: 20px; 
   border-radius: 12px; 
   border: none; 
-  transition: transform 0.2s; /* 增加平滑位移效果 */
+  transition: transform 0.2s;
 }
-
-.recruitment-card:hover {
-  transform: translateY(-5px); /* 悬停微动 */
-}
+.recruitment-card:hover { transform: translateY(-5px); }
 
 .band-card { border-top: 4px solid #67c23a; }
 .member-card { border-top: 4px solid #e6a23c; }
@@ -236,6 +246,34 @@ onMounted(fetchRecruitments)
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
-.footer { border-top: 1px solid #f2f6fc; padding-top: 10px; display: flex; justify-content: space-between; font-size: 12px; }
-.contact { color: #409eff; font-weight: bold; }
+
+/* ⚡️ 底部信息区优化 */
+.footer { 
+  border-top: 1px solid #f2f6fc; 
+  padding-top: 12px; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center;
+  font-size: 12px; 
+}
+
+.publisher-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mini-avatar {
+  border: 1px solid #eee;
+}
+
+.nickname {
+  color: #606266;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contact-hint { color: #409eff; font-weight: bold; }
 </style>

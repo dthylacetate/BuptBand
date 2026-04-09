@@ -34,6 +34,7 @@ public class AppUser
 
     @Column(length = 1000)
     private String bio;         //个人简介
+    private String avatarUrl;   //头像url
     //后续再来添加剩余的字段，头像url之类的
 
 

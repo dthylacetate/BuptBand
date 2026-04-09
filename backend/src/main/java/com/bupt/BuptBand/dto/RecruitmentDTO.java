@@ -14,7 +14,9 @@ public class RecruitmentDTO
     private String detail;
     private String contactInformation;
     private RecruitmentType type;
+    private String PublisherAvatar;
 
     // 不把整个AppUser传出去，只传一个昵称
     private String publisherNickname;
+
 }

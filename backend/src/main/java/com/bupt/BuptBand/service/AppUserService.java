@@ -111,6 +111,10 @@ public class AppUserService
         {
             user.setPlayingYears(updateData.getPlayingYears());
         }
+        if (updateData.getAvatarUrl() != null)
+        {
+            user.setAvatarUrl(updateData.getAvatarUrl());
+        }
 
         // 存回数据库
         return appUserRepository.save(user);
