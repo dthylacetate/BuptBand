@@ -3,6 +3,7 @@ package com.bupt.BuptBand.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -20,6 +21,20 @@ public class SecurityConfig
     }
 
 
+
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring()
+                .requestMatchers("/doc.html")
+                .requestMatchers("/webjars/**")
+                .requestMatchers("/v3/api-docs/**") // 匹配所有 v3 开头的文档数据
+                .requestMatchers("/v3/api-docs")    // 匹配精确路径
+                .requestMatchers("/swagger-resources/**")
+                .requestMatchers("/swagger-ui/**")
+                .requestMatchers("/favicon.ico");
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception
     {
@@ -28,7 +43,18 @@ public class SecurityConfig
                 .headers(headers -> headers.frameOptions(f -> f.sameOrigin()))
                 .addFilterBefore(jwtFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/users/register", "/api/users/login", "/api/users/send-code", "/h2-console/**").permitAll()
+                        .requestMatchers("/api/users/register",
+                                "/api/users/login",
+                                "/api/users/send-code",
+                                "/h2-console/**",
+                                "/doc.html",
+                                "/webjars/**",
+                                "/v3/api-docs",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/swagger-resources/**").permitAll()
                         .anyRequest().authenticated() // ！！！除了上面的，其他全部要求带 Token 登录
                 );
         return http.build();

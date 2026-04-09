@@ -9,9 +9,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
 
+@Tag(name = "用户管理", description = "处理注册、登录、名片修改") // 给类打标签
 @RestController
 @RequestMapping("/api/users")
 public class UserController
@@ -52,6 +55,7 @@ public class UserController
 
 
     // 在 UserController 中增加
+    @Operation(summary = "用户登录", description = "输入昵称和密码，换取 JWT Token") // 给方法打标签
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginRequest request)
     {
@@ -67,7 +71,7 @@ public class UserController
         }
     }
 
-
+    @Operation(summary = "修改个人名片", description = "必须带 Token 才能修改当前登录乐手的资料")
     @PutMapping("/me")
     public ResponseEntity<AppUser> updateMyProfile(@RequestBody AppUser updateData)
     {
