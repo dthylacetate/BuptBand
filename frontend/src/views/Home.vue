@@ -2,6 +2,9 @@
   <div class="home-container">
     <el-menu mode="horizontal" class="nav-menu" :ellipsis="false">
       <div class="logo">🎸 RIGHTSPELL 乐手广场</div>
+      <el-menu-item index="discussion" @click="router.push('/discussions')">
+    💬 讨论区
+  </el-menu-item>
       <div class="flex-grow" />
       <el-sub-menu index="user">
         <template #title>👤 我的账号</template>
@@ -292,4 +295,21 @@ onMounted(fetchRecruitments)
 }
 
 .contact-hint { color: #909399; font-style: italic; }
+
+
+
+
+/* 确保菜单项文字颜色和 Logo 搭配 */
+.nav-menu .el-menu-item {
+  font-size: 15px;
+  font-weight: 500;
+  margin-left: 20px; /* 和 Logo 拉开一点距离 */
+}
+
+/* 鼠标悬停时有一点亮色反馈 */
+.nav-menu .el-menu-item:hover {
+  color: #409eff !important;
+}
 </style>
+
+

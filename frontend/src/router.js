@@ -31,10 +31,20 @@ const routes = [
     props: true // 允许将路由参数 ID 作为 props 传给组件
   },
   {
-  path: '/user/:nickname',
-  name: 'PublicProfile',
-  component: () => import('./views/PublicProfile.vue'),
-  props: true
+    path: '/user/:nickname',
+    name: 'PublicProfile',
+    component: () => import('./views/PublicProfile.vue'),
+    props: true
+  },
+  {
+    path: '/discussions',
+    name: 'DiscussionBoard',
+    component: () => import('./views/DiscussionBoard.vue')
+  },
+  {
+    path: '/discussions/:id',
+    name: 'DiscussionDetail',
+    component: () => import('./views/DiscussionDetail.vue')
   }
 ]
 

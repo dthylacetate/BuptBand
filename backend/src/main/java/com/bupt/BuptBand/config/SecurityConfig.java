@@ -50,6 +50,7 @@ public class SecurityConfig
                         .requestMatchers("/api/recruitments/user/**").permitAll()
                         .requestMatchers("/api/users/register",
                                 "/api/users/login",
+                                "/api/discussions/**",
                                 "/api/users/send-code",
                                 "/h2-console/**",
                                 "/doc.html",
