@@ -45,6 +45,16 @@ const routes = [
     path: '/discussions/:id',
     name: 'DiscussionDetail',
     component: () => import('./views/DiscussionDetail.vue')
+  },
+  {
+    path: '/shows',
+    name: 'ShowBoard',
+    component: () => import('./views/ShowBoard.vue')
+  },
+  {
+    path: '/shows/:id',
+    name: 'ShowDetail',
+    component: () => import('./views/ShowDetail.vue')
   }
 ]
 

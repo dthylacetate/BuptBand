@@ -4,6 +4,11 @@
       <div class="logo">🎸 RIGHTSPELL 乐手广场</div>
       <el-menu-item index="discussion" @click="router.push('/discussions')">
     💬 讨论区
+
+    <el-menu-item index="shows" @click="router.push('/shows')">
+    📅 演出公告
+  </el-menu-item>
+
   </el-menu-item>
       <div class="flex-grow" />
       <el-sub-menu index="user">
@@ -306,10 +311,42 @@ onMounted(fetchRecruitments)
   margin-left: 20px; /* 和 Logo 拉开一点距离 */
 }
 
-/* 鼠标悬停时有一点亮色反馈 */
-.nav-menu .el-menu-item:hover {
-  color: #409eff !important;
+.nav-menu .el-menu-item {
+  /* 1. 缩窄色块：减少内部左右空间 */
+  padding: 0 12px !important; 
+  
+  /* 2. 拉开距离：增加外部左右间距 */
+  margin: 0 200px !important; 
+  
+  /* 3. 高度微调：让色块看起来更精致 */
+  height: 34px !important;
+  line-height: 34px !important;
+  align-self: center; /* 在导航栏垂直居中 */
+  
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border-bottom: none !important; /* 去掉 ElementPlus 默认的底部边框线 */
 }
+
+/* 4. 悬停效果：做一个精致的胶囊形状 */
+.nav-menu .el-menu-item:hover {
+  background-color: #ecf5ff !important; /* 淡淡的蓝色 */
+  color: #409eff !important;
+  border-radius: 17px; /* 高度的一半，形成完美的圆角胶囊 */
+}
+
+/* 5. 选中状态：去掉默认的下划线，保持胶囊样式的统一 */
+.nav-menu .el-menu-item.is-active {
+  background-color: #409eff !important;
+  color: #fff !important;
+  border-radius: 17px;
+  border-bottom: none !important;
+}
+
+
+
+
 </style>
 
 

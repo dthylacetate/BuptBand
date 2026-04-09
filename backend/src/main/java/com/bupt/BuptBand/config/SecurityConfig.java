@@ -2,6 +2,7 @@ package com.bupt.BuptBand.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -48,6 +49,7 @@ public class SecurityConfig
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/api/users/public/**").permitAll()
                         .requestMatchers("/api/recruitments/user/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/shows/**").permitAll() // 允许任何人看演出信息
                         .requestMatchers("/api/users/register",
                                 "/api/users/login",
                                 "/api/discussions/**",
