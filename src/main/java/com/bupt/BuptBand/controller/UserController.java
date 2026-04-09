@@ -13,7 +13,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
-
+@CrossOrigin(origins = "*") // 暂时允许所有来源，开发环境最省事
 @Tag(name = "用户管理", description = "处理注册、登录、名片修改") // 给类打标签
 @RestController
 @RequestMapping("/api/users")

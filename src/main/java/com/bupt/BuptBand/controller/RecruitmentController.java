@@ -12,7 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
+@CrossOrigin(origins = "*") // 暂时允许所有来源，开发环境最省事
 @RestController
 @RequestMapping("/api/recruitments")
 public class RecruitmentController
