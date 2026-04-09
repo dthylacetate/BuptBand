@@ -12,6 +12,6 @@ public class RecruitmentCreateRequest
     private String requirements;
     private String detail;
     private String contactInformation;
-    private Long publisherId;
+    //private Long publisherId;
     private RecruitmentType type;
 }

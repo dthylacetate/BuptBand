@@ -71,10 +71,10 @@ public class RecruitmentService
 
 
 
-
+    /*
     public Recruitment createRecruitment(RecruitmentCreateRequest request)
     {
-        // 1核心逻辑：去仓库里根据前端传来的 ID 把那个乐手“捞”出来
+        // 核心逻辑：去仓库里根据前端传来的 ID 把那个乐手“捞”出来
         AppUser publisher = appUserRepository.findById(request.getPublisherId())
                 .orElseThrow(() -> new RuntimeException("错误：该乐手 ID 不存在，无法发布招募"));
 
@@ -93,6 +93,34 @@ public class RecruitmentService
 
         return recruitmentRepository.save(recruitment);
     }
+    */
+
+
+
+    public Recruitment createRecruitmentWithUser(RecruitmentCreateRequest request, String nickname)
+    {
+        //根据昵称找到发布者对象
+        AppUser publisher = appUserRepository.findByNickname(nickname)
+                .orElseThrow(() -> new RuntimeException("错误：发布者身份异常"));
+
+        //将 DTO 的数据填充到 Entity
+        Recruitment recruitment = new Recruitment();
+        recruitment.setTitle(request.getTitle());
+        recruitment.setPosition(request.getPosition());
+        recruitment.setStyle(request.getStyle());
+        recruitment.setRequirements(request.getRequirements());
+        recruitment.setDetail(request.getDetail());
+        recruitment.setContactInformation(request.getContactInformation());
+        recruitment.setType(request.getType());
+
+        //手动建立关联
+        recruitment.setPublisher(publisher);
+
+        return recruitmentRepository.save(recruitment);
+    }
+
+
+
 
     public List<Recruitment> findAllRecruitments()
     {

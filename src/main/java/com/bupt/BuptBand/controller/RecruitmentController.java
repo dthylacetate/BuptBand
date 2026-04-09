@@ -8,6 +8,7 @@ import com.bupt.BuptBand.service.RecruitmentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,8 +29,10 @@ public class RecruitmentController
     @PostMapping
     public ResponseEntity<RecruitmentDTO> createRecruitment(@RequestBody RecruitmentCreateRequest request)
     {
+
+        String currentNickname = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         // 调用Service
-        Recruitment savedRecruitment = recruitmentService.createRecruitment(request);
+        Recruitment savedRecruitment = recruitmentService.createRecruitmentWithUser(request, currentNickname);
 
         // 转化为DTO
         RecruitmentDTO response = convertToDTO(savedRecruitment);
