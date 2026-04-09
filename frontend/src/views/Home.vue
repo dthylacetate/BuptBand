@@ -13,7 +13,12 @@
     <el-main>
       <div class="toolbar">
         <div class="search-group">
-          <el-input v-model="searchQuery.instrument" placeholder="搜索位置 (如: 贝斯手)" style="width: 180px; margin-right: 10px;" clearable />
+          <el-input 
+            v-model="searchQuery.instrument" 
+            placeholder="搜索位置 (如: 贝斯手)" 
+            style="width: 180px; margin-right: 10px;" 
+            clearable 
+          />
           <el-button type="primary" @click="fetchRecruitments">筛选</el-button>
         </div>
         
@@ -28,8 +33,17 @@
       </div>
 
       <el-row :gutter="20" v-if="recruitments.length > 0">
-        <el-col :xs="24" :sm="12" :md="8" :lg="6" v-for="item in recruitments" :key="item.id">
-          <el-card :class="['recruitment-card', item.type === 'BAND_SEEKING_MEMBER' ? 'band-card' : 'member-card']" shadow="hover">
+        <el-col 
+          :xs="24" :sm="12" :md="8" :lg="6" 
+          v-for="item in recruitments" 
+          :key="item.id"
+        >
+          <el-card 
+            :class="['recruitment-card', item.type === 'BAND_SEEKING_MEMBER' ? 'band-card' : 'member-card']" 
+            shadow="hover"
+            @click="router.push(`/recruitments/${item.id}`)"
+            style="cursor: pointer;"
+          >
             <template #header>
               <div class="card-header">
                 <el-tag :type="item.type === 'BAND_SEEKING_MEMBER' ? 'success' : 'warning'" size="small">
@@ -45,7 +59,7 @@
             </div>
             <div class="footer">
               <span>👤 {{ item.publisherNickname || '匿名乐手' }}</span>
-              <span class="contact">📞 有意私聊</span>
+              <span class="contact">📞 点击查看联系方式</span>
             </div>
           </el-card>
         </el-col>
@@ -61,7 +75,10 @@
     >
       <el-form :model="addForm" label-position="top">
         <el-form-item label="帖子标题" required>
-          <el-input v-model="addForm.title" :placeholder="addForm.type === 'BAND_SEEKING_MEMBER' ? '如：沙河重金属乐队招贝斯' : '如：五年琴龄老贝斯求收留'" />
+          <el-input 
+            v-model="addForm.title" 
+            :placeholder="addForm.type === 'BAND_SEEKING_MEMBER' ? '如：沙河重金属乐队招贝斯' : '如：五年琴龄老贝斯求收留'" 
+          />
         </el-form-item>
 
         <el-row :gutter="20">
@@ -99,7 +116,10 @@
 
       <template #footer>
         <el-button @click="showAddDialog = false">取消</el-button>
-        <el-button :type="addForm.type === 'BAND_SEEKING_MEMBER' ? 'success' : 'warning'" @click="submitRecruitment">
+        <el-button 
+          :type="addForm.type === 'BAND_SEEKING_MEMBER' ? 'success' : 'warning'" 
+          @click="submitRecruitment"
+        >
           立即发布
         </el-button>
       </template>
@@ -111,7 +131,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Plus, Search } from '@element-plus/icons-vue' // 引入图标
+import { Plus, Search } from '@element-plus/icons-vue' 
 import request from '../api/request'
 
 const router = useRouter()
@@ -127,10 +147,9 @@ const addForm = ref({
   requirements: '',
   detail: '',
   contactInformation: '',
-  type: '' // 这里会根据点击的按钮填充枚举值
+  type: '' 
 })
 
-// ⚡️ 核心：根据不同入口打开弹窗
 const openDialog = (type) => {
   addForm.value.type = type
   showAddDialog.value = true
@@ -139,10 +158,15 @@ const openDialog = (type) => {
 const fetchRecruitments = async () => {
   try {
     const res = await request.get('/recruitments', {
-      params: { position: searchQuery.value.instrument, keyword: searchQuery.value.keyword }
+      params: { 
+        position: searchQuery.value.instrument, 
+        keyword: searchQuery.value.keyword 
+      }
     })
     recruitments.value = res
-  } catch (error) { console.error('获取列表失败', error) }
+  } catch (error) { 
+    console.error('获取列表失败', error) 
+  }
 }
 
 const submitRecruitment = async () => {
@@ -151,14 +175,14 @@ const submitRecruitment = async () => {
   }
 
   try {
-    // ⚡️ 发送到后端，后端会收到字符串类型的枚举值
     await request.post('/recruitments', addForm.value)
     ElMessage.success('发布成功！')
     showAddDialog.value = false
-    // 重置并刷新
     addForm.value = { title: '', position: '', style: '', requirements: '', detail: '', contactInformation: '', type: '' }
     fetchRecruitments()
-  } catch (err) { console.error(err) }
+  } catch (err) { 
+    console.error(err) 
+  }
 }
 
 const handleLogout = () => {
@@ -185,14 +209,33 @@ onMounted(fetchRecruitments)
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-.recruitment-card { margin-bottom: 20px; border-radius: 12px; border: none; }
-/* ⚡️ 不同类型的卡片稍微区分一下边框颜色 */
+.recruitment-card { 
+  margin-bottom: 20px; 
+  border-radius: 12px; 
+  border: none; 
+  transition: transform 0.2s; /* 增加平滑位移效果 */
+}
+
+.recruitment-card:hover {
+  transform: translateY(-5px); /* 悬停微动 */
+}
+
 .band-card { border-top: 4px solid #67c23a; }
 .member-card { border-top: 4px solid #e6a23c; }
 
 .title-text { font-weight: 600; margin-left: 10px; color: #303133; }
 .info-line { font-size: 14px; margin: 5px 0; color: #606266; }
-.detail-text { font-size: 13px; color: #909399; margin-top: 10px; line-height: 1.6; height: 50px; overflow: hidden; }
+.detail-text { 
+  font-size: 13px; 
+  color: #909399; 
+  margin-top: 10px; 
+  line-height: 1.6; 
+  height: 50px; 
+  overflow: hidden; 
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
 .footer { border-top: 1px solid #f2f6fc; padding-top: 10px; display: flex; justify-content: space-between; font-size: 12px; }
 .contact { color: #409eff; font-weight: bold; }
 </style>

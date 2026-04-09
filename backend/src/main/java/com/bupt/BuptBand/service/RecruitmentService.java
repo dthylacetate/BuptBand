@@ -111,9 +111,16 @@ public class RecruitmentService
         recruitmentRepository.delete(recruitment);
     }
 
-    public List<Recruitment> findMyRecruitments(String nickname) {
-        // 直接调用刚才在 Repository 定义的方法
+    public List<Recruitment> findMyRecruitments(String nickname)
+    {
+
         return recruitmentRepository.findByPublisherNickname(nickname);
+    }
+    //查询单个帖子用ID
+    public Recruitment findRecruitmentById(Long id)
+    {
+        return recruitmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("该招募贴已下架或不存在喵"));
     }
 
 

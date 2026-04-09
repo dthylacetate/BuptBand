@@ -5,6 +5,7 @@ import com.bupt.BuptBand.dto.RecruitmentDTO;
 import com.bupt.BuptBand.model.Recruitment;
 import com.bupt.BuptBand.model.RecruitmentType;
 import com.bupt.BuptBand.service.RecruitmentService;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -71,7 +72,8 @@ public class RecruitmentController
 
 
     @GetMapping("/my")
-    public ResponseEntity<List<RecruitmentDTO>> getMyRecruitments() {
+    public ResponseEntity<List<RecruitmentDTO>> getMyRecruitments()
+    {
         // 从安全上下文获取当前人昵称
         String currentNickname = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
@@ -84,6 +86,16 @@ public class RecruitmentController
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(response);
+    }
+
+
+    @Operation(summary = "查询单个招募详情")
+    @GetMapping("/{id}")
+    public ResponseEntity<RecruitmentDTO> getRecruitmentDetail(@PathVariable Long id)
+    {
+
+        Recruitment recruitment = recruitmentService.findRecruitmentById(id);
+        return ResponseEntity.ok(convertToDTO(recruitment));
     }
 
 
