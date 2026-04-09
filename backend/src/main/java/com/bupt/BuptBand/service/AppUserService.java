@@ -35,7 +35,7 @@ public class AppUserService
     public AppUser registerUser(RegistrationRequest request)
     {
         // 验证码校验
-        if (!emailService.verifyCode(request.getEmail(), request.getVerificationCode()))
+        if (!emailService.verifyCode(request.getEmail(), request.getCode()))
         {
             throw new RuntimeException("错误：验证码不匹配或已过期");
         }

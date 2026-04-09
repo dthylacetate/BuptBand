@@ -36,7 +36,7 @@ public class EmailService
         redisTemplate.opsForValue().set(
                 REDIS_CODE_PREFIX + toEmail,
                 code,
-                5,
+                30,
                 TimeUnit.MINUTES
         );
 
@@ -45,29 +45,47 @@ public class EmailService
         message.setFrom("BuptBand喵 <" + fromEmail + ">");
         message.setTo(toEmail);
         message.setSubject("BuptBand 注册验证码");
-        message.setText("宝宝你的验证码是：" + code + "，有效期 5 分钟。请尽快完成注册喵。");
+        message.setText("宝宝你的验证码是：" + code + "，有效期 30 分钟。请尽快完成注册喵。");
 
         mailSender.send(message);
     }
 
-    public boolean verifyCode(String email, String inputCode)
-    {
-        // 从 Redis 中取出验证码
-        String savedCode = redisTemplate.opsForValue().get(REDIS_CODE_PREFIX + email);
+    public boolean verifyCode(String email, String inputCode) {
 
-        // 如果 savedCode 为空，说明验证码已过期或从未发送
-        if (savedCode == null)
-        {
+        if (email == null || inputCode == null) {
+            System.out.println("### 验证失败：Email 或验证码为空 ###");
             return false;
         }
 
-        // 比对成功后，建议立即手动删除验证码，防止被重复利用（专业做法）
-        if (savedCode.equals(inputCode))
-        {
-            redisTemplate.delete(REDIS_CODE_PREFIX + email);
+
+        // 强行去除首尾空格
+        String cleanEmail = email.trim();
+        String cleanInputCode = inputCode.trim();
+        String redisKey = REDIS_CODE_PREFIX + cleanEmail;
+
+        // 从 Redis 取值
+        String savedCode = redisTemplate.opsForValue().get(redisKey);
+
+        // --- 调试打印
+        System.out.println("### 正在验证 ###");
+        System.out.println("待查 Email: [" + cleanEmail + "]");
+        System.out.println("Redis Key: [" + redisKey + "]");
+        System.out.println("Redis 中的验证码: [" + savedCode + "]");
+        System.out.println("用户输入的验证码: [" + cleanInputCode + "]");
+        // ----------------------------------------
+
+        if (savedCode == null) {
+            System.out.println("验证失败：Redis 中找不到该 Key 或已过期");
+            return false;
+        }
+
+        if (savedCode.equals(cleanInputCode)) {
+            redisTemplate.delete(redisKey);
+            System.out.println("验证成功！已删除 Redis Key");
             return true;
         }
 
+        System.out.println("验证失败：验证码不一致");
         return false;
     }
 }

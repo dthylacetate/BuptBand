@@ -8,5 +8,5 @@ public class RegistrationRequest
     private String nickname;
     private String password;
     private String email;
-    private String verificationCode; // 前端传回来的 6 位验证码
+    private String code; // 前端传回来的 6 位验证码
 }
