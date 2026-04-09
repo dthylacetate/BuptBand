@@ -123,7 +123,11 @@ public class RecruitmentService
                 .orElseThrow(() -> new RuntimeException("该招募贴已下架或不存在喵"));
     }
 
-
+    // 根据昵称查该用户的所有帖子
+    public List<Recruitment> findByNickname(String nickname)
+    {
+        return recruitmentRepository.findByPublisherNickname(nickname);
+    }
 
 
 

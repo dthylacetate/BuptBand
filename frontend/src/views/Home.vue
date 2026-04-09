@@ -59,14 +59,14 @@
             </div>
             
             <div class="footer">
-              <div class="publisher-info">
+              <div class="publisher-info" @click.stop="goToUser(item.publisherNickname)">
                 <el-avatar 
                   :size="24" 
                   :src="item.publisherAvatar ? serverRoot + item.publisherAvatar : ''"
                   icon="User"
-                  class="mini-avatar"
+                  class="mini-avatar clickable-avatar"
                 />
-                <span class="nickname">{{ item.publisherNickname || '匿名乐手' }}</span>
+                <span class="nickname clickable-nickname">{{ item.publisherNickname || '匿名乐手' }}</span>
               </div>
               <span class="contact-hint">查看详情</span>
             </div>
@@ -149,7 +149,7 @@ const showAddDialog = ref(false)
 const searchQuery = ref({ instrument: '', keyword: '' })
 
 // ⚡️ 环境变量与路径处理
-const apiUrl = import.meta.env.VITE_API_BASE_URL;
+const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
 const serverRoot = apiUrl.replace('/api', '');
 
 // 初始表单状态
@@ -166,6 +166,12 @@ const addForm = ref({
 const openDialog = (type) => {
   addForm.value.type = type
   showAddDialog.value = true
+}
+
+// ⚡️ 新增：跳转到用户公开名片页
+const goToUser = (nickname) => {
+  if (!nickname) return;
+  router.push(`/user/${nickname}`);
 }
 
 const fetchRecruitments = async () => {
@@ -247,7 +253,6 @@ onMounted(fetchRecruitments)
   -webkit-box-orient: vertical;
 }
 
-/* ⚡️ 底部信息区优化 */
 .footer { 
   border-top: 1px solid #f2f6fc; 
   padding-top: 12px; 
@@ -261,6 +266,17 @@ onMounted(fetchRecruitments)
   display: flex;
   align-items: center;
   gap: 8px;
+  cursor: pointer; /* ⚡️ 鼠标手型暗示可点 */
+}
+
+.clickable-avatar:hover {
+  transform: scale(1.1);
+  transition: all 0.2s;
+}
+
+.clickable-nickname:hover {
+  color: #409eff;
+  text-decoration: underline;
 }
 
 .mini-avatar {
@@ -275,5 +291,5 @@ onMounted(fetchRecruitments)
   white-space: nowrap;
 }
 
-.contact-hint { color: #409eff; font-weight: bold; }
+.contact-hint { color: #909399; font-style: italic; }
 </style>

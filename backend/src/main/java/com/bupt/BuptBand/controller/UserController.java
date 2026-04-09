@@ -2,6 +2,7 @@ package com.bupt.BuptBand.controller;
 
 import com.bupt.BuptBand.dto.LoginRequest;
 import com.bupt.BuptBand.dto.RegistrationRequest;
+import com.bupt.BuptBand.dto.UserPublicDTO;
 import com.bupt.BuptBand.model.AppUser;
 import com.bupt.BuptBand.service.AppUserService;
 import com.bupt.BuptBand.service.EmailService;
@@ -99,6 +100,21 @@ public class UserController
     }
 
 
+
+    @GetMapping("/public/{nickname}")
+    public ResponseEntity<UserPublicDTO> getPublicProfile(@PathVariable String nickname)
+    {
+        AppUser user = appUserService.findByNickname(nickname);
+
+        UserPublicDTO dto = new UserPublicDTO();
+        dto.setNickname(user.getNickname());
+        dto.setInstrument(user.getInstrument());
+        dto.setPlayingYears(user.getPlayingYears());
+        dto.setBio(user.getBio());
+        dto.setAvatarUrl(user.getAvatarUrl());
+
+        return ResponseEntity.ok(dto);
+    }
 
 
 

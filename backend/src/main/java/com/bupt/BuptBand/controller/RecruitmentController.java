@@ -100,6 +100,16 @@ public class RecruitmentController
 
 
 
+    @GetMapping("/user/{nickname}")
+    public ResponseEntity<List<RecruitmentDTO>> getRecruitmentsByUser(@PathVariable String nickname)
+    {
+        List<Recruitment> list = recruitmentService.findByNickname(nickname);
+        return ResponseEntity.ok(list.stream().map(this::convertToDTO).collect(Collectors.toList()));
+    }
+
+
+
+
     // 负责把 Entity 转成 DTO
     private RecruitmentDTO convertToDTO(Recruitment recruitment)
     {
@@ -118,6 +128,7 @@ public class RecruitmentController
             dto.setPublisherNickname(recruitment.getPublisher().getNickname());
             dto.setPublisherAvatar(recruitment.getPublisher().getAvatarUrl());
         }
+
 
         return dto;
     }

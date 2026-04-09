@@ -46,6 +46,8 @@ public class SecurityConfig
                 .addFilterBefore(jwtFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/uploads/**").permitAll()
+                        .requestMatchers("/api/users/public/**").permitAll()
+                        .requestMatchers("/api/recruitments/user/**").permitAll()
                         .requestMatchers("/api/users/register",
                                 "/api/users/login",
                                 "/api/users/send-code",
