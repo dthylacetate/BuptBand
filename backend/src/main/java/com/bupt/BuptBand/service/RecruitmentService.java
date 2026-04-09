@@ -111,6 +111,11 @@ public class RecruitmentService
         recruitmentRepository.delete(recruitment);
     }
 
+    public List<Recruitment> findMyRecruitments(String nickname) {
+        // 直接调用刚才在 Repository 定义的方法
+        return recruitmentRepository.findByPublisherNickname(nickname);
+    }
+
 
 
 

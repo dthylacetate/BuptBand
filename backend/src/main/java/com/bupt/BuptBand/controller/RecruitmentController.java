@@ -67,6 +67,27 @@ public class RecruitmentController
     }
 
 
+
+
+
+    @GetMapping("/my")
+    public ResponseEntity<List<RecruitmentDTO>> getMyRecruitments() {
+        // 从安全上下文获取当前人昵称
+        String currentNickname = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        //调用 Service 获取实体列表
+        List<Recruitment> myItems = recruitmentService.findMyRecruitments(currentNickname);
+
+        //转化为 DTO 列表返回
+        List<RecruitmentDTO> response = myItems.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(response);
+    }
+
+
+
     // 负责把 Entity 转成 DTO
     private RecruitmentDTO convertToDTO(Recruitment recruitment)
     {
