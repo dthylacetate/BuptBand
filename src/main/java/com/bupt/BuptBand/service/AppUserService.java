@@ -88,8 +88,46 @@ public class AppUserService
 
 
 
+    public AppUser updateUserProfile(String nickname, AppUser updateData)
+    {
+        // 找到这个人
+        AppUser user = appUserRepository.findByNickname(nickname)
+                .orElseThrow(() -> new RuntimeException("错误：用户不存在"));
+
+        // 更新名片信息（如果前端传了的话）
+        if (updateData.getInstrument() != null)
+        {
+            user.setInstrument(updateData.getInstrument());
+        }
+        if (updateData.getCampus() != null)
+        {
+            user.setCampus(updateData.getCampus());
+        }
+        if (updateData.getBio() != null)
+        {
+            user.setBio(updateData.getBio());
+        }
+        if (updateData.getPlayingYears() != null)
+        {
+            user.setPlayingYears(updateData.getPlayingYears());
+        }
+
+        // 存回数据库
+        return appUserRepository.save(user);
+    }
+
+
+
+
+
+
     public List<AppUser> findAllUsers()
     {
         return appUserRepository.findAll();
     }
+
+
+
+
+
 }

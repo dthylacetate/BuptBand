@@ -7,6 +7,7 @@ import com.bupt.BuptBand.service.AppUserService;
 import com.bupt.BuptBand.service.EmailService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -65,6 +66,24 @@ public class UserController
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
+
+
+    @PutMapping("/me")
+    public ResponseEntity<AppUser> updateMyProfile(@RequestBody AppUser updateData)
+    {
+        // 从 Spring Security 的上下文中拿到 JwtAuthenticationFilter 塞进去的昵称
+        String currentNickname = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        // 打印一下日志，看看是谁在修改资料
+        System.out.println("正在更新乐手资料，昵称: " + currentNickname);
+
+        AppUser updatedUser = appUserService.updateUserProfile(currentNickname, updateData);
+        return ResponseEntity.ok(updatedUser);
+    }
+
+
+
+
 
 
 
