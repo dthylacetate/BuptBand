@@ -51,6 +51,7 @@ import { ref } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import request from '../api/request'
 
 const router = useRouter()
 const countdown = ref(0)
@@ -75,7 +76,7 @@ const sendCode = async () => {
      * 这里将 axios.get 改为 axios.post。
      * 即使后端是用 @RequestParam 接收的，axios.post 也可以通过 URL 参数传递。
      */
-    await axios.post(`http://localhost:8080/api/users/send-code?email=${email}`)
+    await request.post(`/users/send-code?email=${email}`)
     
     ElMessage.success('验证码已发送至你的邮箱')
     
@@ -85,7 +86,7 @@ const sendCode = async () => {
       if (countdown.value <= 0) clearInterval(timer)
     }, 1000)
   } catch (error) {
-    ElMessage.error(error.response?.data || '发送失败，请检查后端接口')
+    //ElMessage.error(error.response?.data || '发送失败，请检查后端接口')
   }
 }
 
@@ -96,7 +97,7 @@ const handleRegister = async () => {
   }
 
   try {
-    await axios.post('http://localhost:8080/api/users/register', regForm.value)
+    await request.post('/users/register', regForm.value)
     ElMessage.success('注册成功！正在前往登录页...')
     setTimeout(() => {
       router.push('/login')

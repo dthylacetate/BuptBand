@@ -23,6 +23,7 @@ import { ref } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import request from '../api/request'
 
 const router = useRouter()
 const loginForm = ref({
@@ -32,18 +33,21 @@ const loginForm = ref({
 
 const handleLogin = async () => {
   try {
-    // 调用你后端的登录接口
-    const res = await axios.post('http://localhost:8080/api/users/login', loginForm.value)
-    // 成功后会收到 Token
-    const token = res.data
-    // 存入本地
-    localStorage.setItem('token', token)
-    ElMessage.success('欢迎回来，乐手！')
-    // 跳转到广场
+    const res = await request.post('/users/login', loginForm.value)
+    
+    // 💡 调试秘籍：你可以先加一行打印，看看后端回来的到底是什么
+    console.log('登录成功后的返回结果:', res)
+
+    // 情况 A：如果后端直接回的就是 Token 字符串
+    localStorage.setItem('token', res) 
+    
+    // 情况 B：如果后端回的是 JSON 对象，如 { "token": "xxxx" }
+    // 则要改为：localStorage.setItem('token', res.token)
+
+    ElMessage.success('欢迎回来！')
     router.push('/')
-  } catch (error) {
-    // 这里会触发你后端写的 GlobalExceptionHandler 返回的中文报错
-    ElMessage.error(error.response?.data || '登录失败')
+  } catch (err) {
+    // 报错已被拦截器处理
   }
 }
 </script>

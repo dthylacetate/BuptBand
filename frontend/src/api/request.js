@@ -1,22 +1,22 @@
-// src/api/request.js
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import router from '../router'
 
 // 1. 创建 axios 实例
 const service = axios.create({
-  // 这里的地址以后上线了直接改这一行就行
-  baseURL: 'http://localhost:8080/api', 
-  timeout: 5000 // 请求超时时间
+  // ⚡️ 核心修改：从 Vite 环境变量中读取地址
+  // 运行 npm run dev 会读取 .env.development 中的配置
+  // 运行 npm run build 会读取 .env.production 中的配置
+  baseURL: import.meta.env.VITE_API_BASE_URL, 
+  timeout: 15000 // 请求超时时间
 })
 
 // 2. 请求拦截器 (Request Interceptor)
-// 作用：在请求发出去之前，自动把 Token 塞进 Header
 service.interceptors.request.use(
   config => {
     const token = localStorage.getItem('token')
-    if (token) {
-      // 给每个请求都加上 Bearer Token
+    if (token && token !== 'undefined') {
+      // 给每个请求都加上 Bearer Token，后端 Spring Security 才能识别
       config.headers['Authorization'] = `Bearer ${token}`
     }
     return config
@@ -27,26 +27,26 @@ service.interceptors.request.use(
 )
 
 // 3. 响应拦截器 (Response Interceptor)
-// 作用：统一处理后端返回的错误码
 service.interceptors.response.use(
   response => {
-    // 如果返回的是成功，直接把数据给到页面
+    // 拦截器直接返回 response.data，这样在组件里就不需要写 res.data 了
     return response.data
   },
   error => {
-    // 统一处理报错
+    console.log('拦截器捕获到的原始错误:', error);
     const { response } = error
     if (response) {
+      // 身份过期处理 (401 是未授权，403 是拒绝访问，通常都是 Token 失效)
       if (response.status === 403 || response.status === 401) {
         ElMessage.error('身份过期，请重新登录')
-        localStorage.removeItem('token') // 清理坏掉的令牌
+        localStorage.removeItem('token') // 清理无效令牌
         router.push('/login')
       } else {
-        // 弹出后端传回来的中文错误提示（比如“验证码错误”）
+        // 弹出后端传回的错误信息 (例如“验证码错误”)
         ElMessage.error(response.data || '系统繁忙，请稍后再试')
       }
     } else {
-      ElMessage.error('无法连接到服务器，请检查网络或后端是否启动')
+      ElMessage.error('无法连接到服务器，请检查后端是否启动')
     }
     return Promise.reject(error)
   }

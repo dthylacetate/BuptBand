@@ -50,13 +50,13 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import request from '../api/request' // 引入我们封装的拦截器
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import request from '../api/request' // 引入咱们的正规军
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const recruitments = ref([])
+const showAddDialog = ref(false) // 补上这个控制弹窗的变量
 const searchQuery = ref({
   instrument: '',
   keyword: ''
@@ -65,22 +65,21 @@ const searchQuery = ref({
 // --- 核心逻辑 1：获取招募列表 ---
 const fetchRecruitments = async () => {
   try {
-    const token = localStorage.getItem('token')
-    const res = await axios.get('http://localhost:8080/api/recruitments', {
-      headers: { Authorization: `Bearer ${token}` }, // 必须带上 Token
+    // ⚡️ 极简模式：
+    // 1. 不需要写全路径，拦截器会自动拼上 .env 里的地址
+    // 2. 不需要手动加 Authorization Header，拦截器自动塞 Token
+    // 3. 拦截器里已经写了 return response.data，所以这里的 res 直接就是列表数据
+    const res = await request.get('/recruitments', {
       params: {
         instrument: searchQuery.value.instrument,
         keyword: searchQuery.value.keyword
       }
     })
-    recruitments.value = res.data
+    recruitments.value = res
   } catch (error) {
-    if (error.response?.status === 403) {
-      ElMessage.error('登录已过期，请重新登录')
-      router.push('/login')
-    } else {
-      ElMessage.error('加载失败')
-    }
+    // 403 等基础报错拦截器已经弹窗处理了
+    // 如果你有特定的 UI 逻辑（比如停止 loading 动画）可以在这里写
+    console.error('加载失败:', error)
   }
 }
 
@@ -91,78 +90,22 @@ const handleLogout = () => {
   router.push('/login')
 }
 
-// 页面加载时立即执行
 onMounted(() => {
   fetchRecruitments()
 })
 </script>
 
 <style scoped>
-.home-container {
-  min-height: 100vh;
-  background-color: #f8f9fa;
-}
-
-.nav-menu {
-  padding: 0 50px;
-  align-items: center;
-}
-
-.logo {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #409eff;
-}
-
-.flex-grow {
-  flex-grow: 1;
-}
-
-.search-bar {
-  margin-bottom: 30px;
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.05);
-}
-
-.recruitment-card {
-  margin-bottom: 20px;
-  border-radius: 12px;
-  transition: transform 0.3s;
-}
-
-.recruitment-card:hover {
-  transform: translateY(-5px);
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.instrument-tag {
-  font-weight: bold;
-  color: #409eff;
-}
-
-.description {
-  font-size: 0.95rem;
-  color: #606266;
-  line-height: 1.6;
-  height: 60px;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-}
-
-.footer {
-  margin-top: 15px;
-  font-size: 0.85rem;
-  color: #909399;
-  border-top: 1px solid #ebeef5;
-  padding-top: 10px;
-}
+/* 样式部分保持不变 */
+.home-container { min-height: 100vh; background-color: #f8f9fa; }
+.nav-menu { padding: 0 50px; align-items: center; }
+.logo { font-size: 1.5rem; font-weight: bold; color: #409eff; }
+.flex-grow { flex-grow: 1; }
+.search-bar { margin-bottom: 30px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 12px 0 rgba(0,0,0,0.05); }
+.recruitment-card { margin-bottom: 20px; border-radius: 12px; transition: transform 0.3s; }
+.recruitment-card:hover { transform: translateY(-5px); }
+.card-header { display: flex; justify-content: space-between; align-items: center; }
+.instrument-tag { font-weight: bold; color: #409eff; }
+.description { font-size: 0.95rem; color: #606266; line-height: 1.6; height: 60px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+.footer { margin-top: 15px; font-size: 0.85rem; color: #909399; border-top: 1px solid #ebeef5; padding-top: 10px; }
 </style>
