@@ -54,6 +54,19 @@ public class RecruitmentController
                 .collect(Collectors.toList());
     }
 
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteRecruitment(@PathVariable Long id)
+    {
+        // 获取当前登录乐手的昵称
+        String currentNickname = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        recruitmentService.deleteRecruitment(id, currentNickname);
+
+        return ResponseEntity.ok("招募帖已成功下架");
+    }
+
+
     // 负责把 Entity 转成 DTO
     private RecruitmentDTO convertToDTO(Recruitment recruitment)
     {

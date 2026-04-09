@@ -71,31 +71,6 @@ public class RecruitmentService
 
 
 
-    /*
-    public Recruitment createRecruitment(RecruitmentCreateRequest request)
-    {
-        // 核心逻辑：去仓库里根据前端传来的 ID 把那个乐手“捞”出来
-        AppUser publisher = appUserRepository.findById(request.getPublisherId())
-                .orElseThrow(() -> new RuntimeException("错误：该乐手 ID 不存在，无法发布招募"));
-
-        //  组装实体
-        Recruitment recruitment = new Recruitment();
-        recruitment.setTitle(request.getTitle());
-        recruitment.setPosition(request.getPosition());
-        recruitment.setStyle(request.getStyle());
-        recruitment.setRequirements(request.getRequirements());
-        recruitment.setDetail(request.getDetail());
-        recruitment.setContactInformation(request.getContactInformation());
-        recruitment.setType(request.getType());
-
-        // 建立多对一的关联
-        recruitment.setPublisher(publisher);
-
-        return recruitmentRepository.save(recruitment);
-    }
-    */
-
-
 
     public Recruitment createRecruitmentWithUser(RecruitmentCreateRequest request, String nickname)
     {
@@ -118,6 +93,24 @@ public class RecruitmentService
 
         return recruitmentRepository.save(recruitment);
     }
+
+
+    public void deleteRecruitment(Long id, String currentNickname)
+    {
+        //查找帖子，找不到直接抛异常
+        Recruitment recruitment = recruitmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("错误：该招募帖不存在"));
+
+        //拿帖子的发布者昵称和当前 Token 里的昵称比对
+        if (!recruitment.getPublisher().getNickname().equals(currentNickname))
+        {
+
+            throw new RuntimeException("非法操作：你只能删除自己发布的招募帖！");
+        }
+
+        recruitmentRepository.delete(recruitment);
+    }
+
 
 
 
