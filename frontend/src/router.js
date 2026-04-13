@@ -24,8 +24,8 @@ const routes = [
     component: Profile,
     meta: { requiresAuth: true } // 标记：个人中心也必须登录
   },
-  { 
-    path: '/recruitments/:id', 
+  {
+    path: '/recruitments/:id',
     name: 'RecruitmentDetail',
     component: RecruitmentDetail,
     props: true // 允许将路由参数 ID 作为 props 传给组件

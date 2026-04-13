@@ -20,20 +20,22 @@ public class DiscussionController
     private DiscussionService discussionService;
     @Autowired
     private AppUserService userService;
+    @Autowired
+    private LikeService likeService;
 
     //获取列表 (DTO 转换逻辑)
     @GetMapping
-    public List<DiscussionPostDTO> getPosts(@RequestParam DiscussionSection section)
+    public List<DiscussionPostDTO> getPosts(@RequestParam DiscussionSection section, Principal principal)
     {
         return discussionService.getPostsBySection(section).stream()
-                .map(this::convertToPostDTO).collect(Collectors.toList());
+                .map(post -> convertToPostDTO(post, principal)).collect(Collectors.toList());
     }
 
     //获取帖子详情
     @GetMapping("/{id}")
-    public DiscussionPostDTO getPost(@PathVariable Long id)
+    public DiscussionPostDTO getPost(@PathVariable Long id, Principal principal)
     {
-        return convertToPostDTO(discussionService.getPostById(id));
+        return convertToPostDTO(discussionService.getPostById(id), principal);
     }
 
     //发布帖子
@@ -42,7 +44,7 @@ public class DiscussionController
     {
         AppUser user = userService.findByNickname(principal.getName());
         post.setPublisher(user);
-        return convertToPostDTO(discussionService.createPost(post));
+        return convertToPostDTO(discussionService.createPost(post), principal);
     }
 
     //获取评论
@@ -68,7 +70,7 @@ public class DiscussionController
     }
 
     // 转换工具方法
-    private DiscussionPostDTO convertToPostDTO(DiscussionPost post) {
+    private DiscussionPostDTO convertToPostDTO(DiscussionPost post, Principal principal) {
         DiscussionPostDTO dto = new DiscussionPostDTO();
         dto.setId(post.getId());
         dto.setTitle(post.getTitle());
@@ -80,6 +82,16 @@ public class DiscussionController
             dto.setPublisherNickname(post.getPublisher().getNickname());
             dto.setPublisherAvatar(post.getPublisher().getAvatarUrl());
         }
+
+        // 添加点赞信息
+        AppUser currentUser = null;
+        if (principal != null) {
+            currentUser = userService.findByNickname(principal.getName());
+        }
+        LikeStatusDTO likeStatus = likeService.getLikeStatus(currentUser, TargetType.DISCUSSION_POST, post.getId());
+        dto.setLikeCount(likeStatus.getLikeCount());
+        dto.setIsLiked(likeStatus.getIsLiked());
+
         return dto;
     }
 

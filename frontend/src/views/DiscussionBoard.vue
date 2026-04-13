@@ -1,146 +1,314 @@
 <template>
-  <div class="board-container">
-    <el-page-header @back="router.push('/')" content="乐手讨论区" class="page-header">
-      <template #title>回广场</template>
-    </el-page-header>
-
-    <el-tabs v-model="activeSection" class="board-tabs" @tab-change="fetchPosts">
-      <el-tab-pane label="🎸 技术/乐理" name="TECH_THEORY" />
-      <el-tab-pane label="🍻 闲聊树洞" name="CHIT_CHAT" />
-    </el-tabs>
-
-    <div v-loading="loading" class="post-list">
-      <el-card 
-        v-for="post in posts" 
-        :key="post.id" 
-        class="post-card" 
-        shadow="hover"
-        @click="goToDetail(post.id)"
-      >
-        <div class="post-header">
-          <el-avatar :size="32" :src="serverRoot + post.publisherAvatar" icon="User" />
-          <div class="post-meta">
-            <span class="nickname">{{ post.publisherNickname }}</span>
-            <span class="time">{{ formatDate(post.createdAt) }}</span>
-          </div>
-        </div>
-        <h3 class="post-title">{{ post.title }}</h3>
-        <p class="post-summary">{{ truncateContent(post.content) }}</p>
-      </el-card>
-
-      <el-empty v-if="posts.length === 0" description="这里还没有乐手发言，快来抢沙发！" />
+  <div :class="['discussion-container', `theme-${currentTheme.id}`]">
+    <!-- 页面头部 -->
+    <div :class="['page-header', `header-${currentTheme.id}`]">
+      <el-page-header @back="router.push('/')" content="讨论区">
+        <template #title>
+          <span class="back-link">← 回广场</span>
+        </template>
+      </el-page-header>
     </div>
 
-    <el-button type="primary" class="fab-button" circle @click="showAddDialog = true">
-      <el-icon :size="24"><Plus /></el-icon>
-    </el-button>
+    <!-- 主内容区 -->
+    <div :class="['discussion-content', `content-${currentTheme.id}`]">
+      <!-- 板块选择器 -->
+      <div :class="['section-selector', `selector-${currentTheme.id}`]">
+        <div
+          v-for="section in sections"
+          :key="section.value"
+          :class="['section-tab', { 'active': currentSection === section.value }]"
+          @click="currentSection = section.value"
+        >
+          {{ section.label }}
+        </div>
+      </div>
 
-    <el-dialog v-model="showAddDialog" title="发表新动态" width="500px">
-      <el-form :model="addForm" label-position="top">
-        <el-form-item label="标题" required>
-          <el-input v-model="addForm.title" placeholder="起个吸引人的标题喵" />
-        </el-form-item>
-        <el-form-item label="内容" required>
-          <el-input 
-            v-model="addForm.content" 
-            type="textarea" 
-            :rows="5" 
-            placeholder="分享你的乐理见解或琴房趣事..." 
-          />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="showAddDialog = false">取消</el-button>
-        <el-button type="primary" @click="submitPost">立即发布</el-button>
-      </template>
-    </el-dialog>
+      <!-- 工具栏 - 根据主题显示 -->
+      <div v-if="currentTheme.id === 'heavy-metal'" class="toolbar-wrapper">
+        <HeavyMetalToolbar button-text="🔥 发布讨论 🔥" @add-click="showAddDialog = true" />
+      </div>
+      <div v-else-if="currentTheme.id === 'cyberpunk'" class="toolbar-wrapper">
+        <CyberpunkToolbar button-text="⚡ 发布讨论 ⚡" @add-click="showAddDialog = true" />
+      </div>
+      <div v-else-if="currentTheme.id === 'retro-wave'" class="toolbar-wrapper">
+        <RetroWaveToolbar button-text="✨ 发布讨论 ✨" @add-click="showAddDialog = true" />
+      </div>
+
+      <!-- 讨论列表 -->
+      <div v-loading="loading" class="discussions-grid">
+        <div v-if="posts.length > 0">
+          <el-row :gutter="30">
+            <el-col v-for="post in posts" :key="post.id" :xs="24" :sm="12" :md="8">
+              <!-- 重金属主题卡片 -->
+              <HeavyMetalDiscussionCard
+                v-if="currentTheme.id === 'heavy-metal'"
+                :item="post"
+                :server-root="serverRoot"
+                @click="router.push(`/discussions/${post.id}`)"
+                @like="toggleLike(post.id, 'DISCUSSION_POST')"
+                @user-click="goToUser(post.publisherNickname)"
+              />
+              <!-- 赛博朋克主题卡片 -->
+              <CyberpunkDiscussionCard
+                v-else-if="currentTheme.id === 'cyberpunk'"
+                :item="post"
+                :server-root="serverRoot"
+                @click="router.push(`/discussions/${post.id}`)"
+                @like="toggleLike(post.id, 'DISCUSSION_POST')"
+                @user-click="goToUser(post.publisherNickname)"
+              />
+              <!-- 复古霓虹主题卡片 -->
+              <RetroWaveDiscussionCard
+                v-else-if="currentTheme.id === 'retro-wave'"
+                :item="post"
+                :server-root="serverRoot"
+                @click="router.push(`/discussions/${post.id}`)"
+                @like="toggleLike(post.id, 'DISCUSSION_POST')"
+                @user-click="goToUser(post.publisherNickname)"
+              />
+            </el-col>
+          </el-row>
+        </div>
+
+        <!-- 空状态 -->
+        <div v-else :class="['empty-state', `empty-${currentTheme.id}`]">
+          <div class="empty-icon">🎨</div>
+          <h3 class="empty-title">暂无讨论</h3>
+          <p class="empty-desc">快来发起第一个话题吧！</p>
+        </div>
+      </div>
+
+      <!-- 发帖对话框 -->
+      <el-dialog
+        v-model="showAddDialog"
+        title="发布讨论"
+        :width="500"
+        :close-on-click-modal="false"
+      >
+        <el-form :model="newPost" label-position="top">
+          <el-form-item label="标题">
+            <el-input v-model="newPost.title" placeholder="请输入标题" />
+          </el-form-item>
+          <el-form-item label="内容">
+            <el-input
+              v-model="newPost.content"
+              type="textarea"
+              :rows="6"
+              placeholder="请输入讨论内容..."
+            />
+          </el-form-item>
+        </el-form>
+        <template #footer>
+          <el-button @click="showAddDialog = false">取消</el-button>
+          <el-button type="primary" @click="submitPost">发布</el-button>
+        </template>
+      </el-dialog>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
 import request from '../api/request'
+import { useTheme } from '../composables/useTheme'
+import HeavyMetalDiscussionCard from '../components/themes/HeavyMetalDiscussionCard.vue'
+import CyberpunkDiscussionCard from '../components/themes/CyberpunkDiscussionCard.vue'
+import RetroWaveDiscussionCard from '../components/themes/RetroWaveDiscussionCard.vue'
+import HeavyMetalToolbar from '../components/themes/HeavyMetalToolbar.vue'
+import CyberpunkToolbar from '../components/themes/CyberpunkToolbar.vue'
+import RetroWaveToolbar from '../components/themes/RetroWaveToolbar.vue'
 
+const { currentTheme, loadTheme } = useTheme()
 const router = useRouter()
-const loading = ref(false)
+
+const sections = [
+  { label: '💬 闲聊树洞', value: 'CHIT_CHAT' },
+  { label: '🎸 技术乐理', value: 'TECH_THEORY' }
+]
+
+const currentSection = ref('CHIT_CHAT')
 const posts = ref([])
-const activeSection = ref('TECH_THEORY')
+const loading = ref(false)
 const showAddDialog = ref(false)
+const newPost = ref({
+  title: '',
+  content: '',
+  section: 'CHIT_CHAT'
+})
 
 const apiUrl = import.meta.env.VITE_API_BASE_URL || ''
 const serverRoot = apiUrl.replace('/api', '')
 
-const addForm = ref({ title: '', content: '', section: '' })
-
-// 1. 获取帖子列表
 const fetchPosts = async () => {
   loading.value = true
   try {
-    const res = await request.get('/discussions', {
-      params: { section: activeSection.value }
-    })
-    posts.value = res
+    const res = await request.get('/discussions', { params: { section: currentSection.value } })
+    posts.value = res.sort((a, b) => b.id - a.id)
   } finally {
     loading.value = false
   }
 }
 
-// 2. 提交新帖
-const submitPost = async () => {
-  if (!addForm.value.title || !addForm.value.content) {
-    return ElMessage.warning('标题和内容都要写喵')
+const toggleLike = async (id, type) => {
+  try {
+    const post = posts.value.find(p => p.id === id)
+    if (post) {
+      post.isLiked = !post.isLiked
+      post.likeCount = post.isLiked ? (post.likeCount || 0) + 1 : Math.max((post.likeCount || 0) - 1, 0)
+    }
+    await request.post(`/likes/${type}/${id}`)
+  } catch (error) {
+    console.error('点赞失败', error)
   }
-  addForm.value.section = activeSection.value
-  await request.post('/discussions', addForm.value)
-  ElMessage.success('发布成功！')
-  showAddDialog.value = false
-  addForm.value = { title: '', content: '', section: '' }
+}
+
+const goToUser = (nickname) => {
+  if (!nickname) return
+  router.push(`/user/${nickname}`)
+}
+
+const submitPost = async () => {
+  if (!newPost.value.title.trim()) {
+    ElMessage.warning('请输入标题')
+    return
+  }
+  if (!newPost.value.content.trim()) {
+    ElMessage.warning('请输入内容')
+    return
+  }
+
+  try {
+    newPost.value.section = currentSection.value
+    await request.post('/discussions', newPost.value)
+    ElMessage.success('发布成功！')
+    newPost.value = { title: '', content: '', section: currentSection.value }
+    showAddDialog.value = false
+    fetchPosts()
+  } catch (error) {
+    console.error('发布失败', error)
+  }
+}
+
+watch(currentSection, () => {
   fetchPosts()
-}
+})
 
-// 3. 跳转详情（准备下一站开发）
-const goToDetail = (id) => {
-  router.push(`/discussions/${id}`)
-}
-
-// 工具函数：格式化时间
-const formatDate = (dateStr) => {
-  return new Date(dateStr).toLocaleString('zh-CN', { 
-    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
-  })
-}
-
-// 工具函数：内容截取
-const truncateContent = (content) => {
-  return content.length > 80 ? content.substring(0, 80) + '...' : content
-}
-
-onMounted(fetchPosts)
+onMounted(() => {
+  loadTheme()
+  fetchPosts()
+})
 </script>
 
 <style scoped>
-.board-container { max-width: 800px; margin: 20px auto; padding: 0 20px; position: relative; min-height: 80vh; }
-.page-header { margin-bottom: 20px; }
-.board-tabs { margin-bottom: 20px; }
-.post-card { margin-bottom: 15px; cursor: pointer; border-radius: 12px; border: none; }
-.post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-.post-meta { display: flex; flex-direction: column; }
-.nickname { font-size: 14px; font-weight: bold; color: #303133; }
-.time { font-size: 12px; color: #909399; }
-.post-title { margin: 0 0 10px; font-size: 18px; }
-.post-summary { font-size: 14px; color: #606266; line-height: 1.6; }
+.discussion-container {
+  min-height: 100vh;
+  position: relative;
+}
 
-/* ⚡️ 悬浮按钮样式 */
-.fab-button {
-  position: fixed;
-  right: 50px;
-  bottom: 50px;
-  width: 60px;
-  height: 60px;
-  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.4);
-  z-index: 99;
+.page-header {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.discussion-content {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px 60px;
+}
+
+.section-selector {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid #2d2d2d;
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.section-tab {
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  font-family: 'Arial Black', sans-serif;
+  font-size: 14px;
+  color: #8c8c8c;
+}
+
+.section-tab:hover {
+  background: rgba(255, 69, 0, 0.1);
+  color: #d4d4d4;
+}
+
+.section-tab.active {
+  background: rgba(255, 69, 0, 0.2);
+  color: #ff4500;
+  border-color: #ff4500;
+}
+
+.discussions-grid {
+  min-height: 400px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.empty-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.empty-title {
+  font-family: 'Impact', 'Arial Black', sans-serif;
+  font-size: 28px;
+  color: #d4d4d4;
+  margin: 0 0 10px;
+}
+
+.empty-desc {
+  font-size: 16px;
+  color: #8c8c8c;
+  margin: 0;
+}
+
+/* 主题特定样式 */
+.theme-cyberpunk .section-selector {
+  border-color: #00ffff;
+  background: rgba(0, 255, 255, 0.05);
+}
+
+.theme-cyberpunk .section-tab.active {
+  background: rgba(0, 255, 255, 0.2);
+  color: #00ffff;
+  border-color: #00ffff;
+}
+
+.theme-retro-wave .section-selector {
+  border-style: dashed;
+  border-color: #ff1493;
+  background: rgba(255, 20, 147, 0.05);
+}
+
+.theme-retro-wave .section-tab.active {
+  background: rgba(255, 20, 147, 0.2);
+  color: #ff1493;
+  border-color: #ff1493;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(255, 69, 0, 0.5)); }
+  50% { transform: scale(1.1); filter: drop-shadow(0 0 20px rgba(255, 69, 0, 0.8)); }
 }
 </style>

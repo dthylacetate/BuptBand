@@ -14,4 +14,6 @@ public class DiscussionPostDTO
     private String publisherNickname;
     private String publisherAvatar;
     private LocalDateTime createdAt;
+    private Integer likeCount;
+    private Boolean isLiked;
 }

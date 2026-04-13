@@ -19,4 +19,7 @@ public class RecruitmentDTO
     // 不把整个AppUser传出去，只传一个昵称
     private String publisherNickname;
 
+    private Integer likeCount;
+    private Boolean isLiked;
+
 }

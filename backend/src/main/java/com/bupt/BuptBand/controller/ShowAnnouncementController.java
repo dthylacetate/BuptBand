@@ -1,9 +1,12 @@
 package com.bupt.BuptBand.controller;
 
+import com.bupt.BuptBand.dto.LikeStatusDTO;
 import com.bupt.BuptBand.dto.ShowAnnouncementDTO;
 import com.bupt.BuptBand.model.AppUser;
 import com.bupt.BuptBand.model.ShowAnnouncement;
+import com.bupt.BuptBand.model.TargetType;
 import com.bupt.BuptBand.service.AppUserService;
+import com.bupt.BuptBand.service.LikeService;
 import com.bupt.BuptBand.service.ShowAnnouncementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -21,21 +24,23 @@ public class ShowAnnouncementController
     private ShowAnnouncementService showService;
     @Autowired
     private AppUserService userService;
+    @Autowired
+    private LikeService likeService;
 
     // 1. 获取所有演出列表
     @GetMapping
-    public List<ShowAnnouncementDTO> getShows()
+    public List<ShowAnnouncementDTO> getShows(Principal principal)
     {
         return showService.getAllShows().stream()
-                .map(this::convertToDTO)
+                .map(show -> convertToDTO(show, principal))
                 .collect(Collectors.toList());
     }
 
     //获取演出详情
     @GetMapping("/{id}")
-    public ShowAnnouncementDTO getShow(@PathVariable Long id)
+    public ShowAnnouncementDTO getShow(@PathVariable Long id, Principal principal)
     {
-        return convertToDTO(showService.getShowById(id));
+        return convertToDTO(showService.getShowById(id), principal);
     }
 
     //发布演出公告 (需登录)
@@ -44,11 +49,11 @@ public class ShowAnnouncementController
     {
         AppUser user = userService.findByNickname(principal.getName());
         show.setPublisher(user);
-        return convertToDTO(showService.createShow(show));
+        return convertToDTO(showService.createShow(show), principal);
     }
 
     //
-    private ShowAnnouncementDTO convertToDTO(ShowAnnouncement show)
+    private ShowAnnouncementDTO convertToDTO(ShowAnnouncement show, Principal principal)
     {
         ShowAnnouncementDTO dto = new ShowAnnouncementDTO();
         dto.setId(show.getId());
@@ -63,6 +68,16 @@ public class ShowAnnouncementController
             dto.setPublisherNickname(show.getPublisher().getNickname());
             dto.setPublisherAvatar(show.getPublisher().getAvatarUrl());
         }
+
+        // 添加点赞信息
+        AppUser currentUser = null;
+        if (principal != null) {
+            currentUser = userService.findByNickname(principal.getName());
+        }
+        LikeStatusDTO likeStatus = likeService.getLikeStatus(currentUser, TargetType.SHOW_ANNOUNCEMENT, show.getId());
+        dto.setLikeCount(likeStatus.getLikeCount());
+        dto.setIsLiked(likeStatus.getIsLiked());
+
         return dto;
     }
 }

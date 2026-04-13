@@ -1,143 +1,156 @@
 <template>
-  <div class="home-container">
-    <el-menu mode="horizontal" class="nav-menu" :ellipsis="false">
-      <div class="logo">🎸 RIGHTSPELL 乐手广场</div>
-      <el-menu-item index="discussion" @click="router.push('/discussions')">
-    💬 讨论区
-
-    <el-menu-item index="shows" @click="router.push('/shows')">
-    📅 演出公告
-  </el-menu-item>
-
-  </el-menu-item>
-      <div class="flex-grow" />
-      <el-sub-menu index="user">
-        <template #title>👤 我的账号</template>
-        <el-menu-item index="profile" @click="router.push('/profile')">个人中心</el-menu-item>
-        <el-menu-item index="logout" @click="handleLogout">退出登录</el-menu-item>
-      </el-sub-menu>
-    </el-menu>
-
-    <el-main>
-      <div class="toolbar">
-        <div class="search-group">
-          <el-input 
-            v-model="searchQuery.instrument" 
-            placeholder="搜索位置 (如: 贝斯手)" 
-            style="width: 180px; margin-right: 10px;" 
-            clearable 
-          />
-          <el-button type="primary" @click="fetchRecruitments">筛选</el-button>
+  <div :class="['home-container', `theme-${currentTheme.id}`]">
+    <!-- 🎸 NAVIGATION BAR 🎸 -->
+    <nav :class="['navbar', `navbar-${currentTheme.id}`]">
+      <div class="nav-container">
+        <div :class="['logo', `logo-${currentTheme.id}`]">
+          <span class="logo-icon">{{ currentTheme.icon }}</span>
+          <span class="logo-text">RIGHTSPELL</span>
+          <span class="logo-sub">乐手广场</span>
         </div>
-        
-        <div class="action-group">
-          <el-button type="success" @click="openDialog('BAND_SEEKING_MEMBER')">
-            <el-icon style="margin-right: 5px;"><Plus /></el-icon>发布乐队招募
-          </el-button>
-          <el-button type="warning" @click="openDialog('MEMBER_SEEKING_BAND')">
-            <el-icon style="margin-right: 5px;"><Search /></el-icon>乐手求组队
-          </el-button>
+
+        <div :class="['nav-menu', `nav-menu-${currentTheme.id}`]">
+          <div :class="['nav-item', `nav-item-${currentTheme.id}`]" @click="router.push('/discussions')">
+            <span class="nav-icon">💬</span>
+            <span class="nav-text">讨论区</span>
+            <div :class="['nav-underline', `nav-underline-${currentTheme.id}`]"></div>
+          </div>
+
+          <div :class="['nav-item', `nav-item-${currentTheme.id}`]" @click="router.push('/shows')">
+            <span class="nav-icon">📅</span>
+            <span class="nav-text">演出公告</span>
+            <div :class="['nav-underline', `nav-underline-${currentTheme.id}`]"></div>
+          </div>
+        </div>
+
+        <div class="nav-user">
+          <ThemeSwitcher />
+
+          <el-dropdown>
+            <div :class="['user-dropdown', `user-dropdown-${currentTheme.id}`]">
+              <span class="user-icon">👤</span>
+              <span class="user-text">我的账号</span>
+              <span class="dropdown-arrow">▼</span>
+            </div>
+            <template #dropdown>
+              <el-dropdown-menu :class="['dropdown-menu', `dropdown-${currentTheme.id}`]">
+                <el-dropdown-item @click="router.push('/profile')" :class="`dropdown-item-${currentTheme.id}`">
+                  <span class="dropdown-icon">👤</span> 个人中心
+                </el-dropdown-item>
+                <el-dropdown-item @click="handleLogout" :class="`dropdown-item-${currentTheme.id}`">
+                  <span class="dropdown-icon">🚪</span> 退出登录
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
         </div>
       </div>
+    </nav>
 
-      <el-row :gutter="20" v-if="recruitments.length > 0">
-        <el-col 
-          :xs="24" :sm="12" :md="8" :lg="6" 
-          v-for="item in recruitments" 
-          :key="item.id"
-        >
-          <el-card 
-            :class="['recruitment-card', item.type === 'BAND_SEEKING_MEMBER' ? 'band-card' : 'member-card']" 
-            shadow="hover"
-            @click="router.push(`/recruitments/${item.id}`)"
-            style="cursor: pointer;"
+    <!-- 🎯 MAIN CONTENT AREA 🎯 -->
+    <main :class="['main-content', `main-${currentTheme.id}`]">
+      <!-- 主题特定的工具栏 -->
+      <div v-if="currentTheme.id === 'heavy-metal'" class="toolbar-wrapper">
+        <HeavyMetalToolbar @add-click="showAddDialog = true" />
+      </div>
+      <div v-else-if="currentTheme.id === 'cyberpunk'" class="toolbar-wrapper">
+        <CyberpunkToolbar @add-click="showAddDialog = true" />
+      </div>
+      <div v-else-if="currentTheme.id === 'retro-wave'" class="toolbar-wrapper">
+        <RetroWaveToolbar @add-click="showAddDialog = true" />
+      </div>
+
+      <!-- 招募列表 -->
+      <div :class="['content-grid', `grid-${currentTheme.id}`]">
+        <el-row :gutter="30">
+          <el-col
+            v-for="item in recruitments"
+            :key="item.id"
+            :xs="24"
+            :sm="12"
+            :md="8"
+            :lg="6"
           >
-            <template #header>
-              <div class="card-header">
-                <el-tag :type="item.type === 'BAND_SEEKING_MEMBER' ? 'success' : 'warning'" size="small">
-                  {{ item.type === 'BAND_SEEKING_MEMBER' ? '招人' : '求队' }}
-                </el-tag>
-                <span class="title-text">{{ item.title }}</span>
-              </div>
-            </template>
-            <div class="card-body">
-              <p class="info-line"><strong>位置：</strong>{{ item.position }}</p>
-              <p class="info-line"><strong>风格：</strong>{{ item.style }}</p>
-              <p class="detail-text">{{ item.detail }}</p>
-            </div>
-            
-            <div class="footer">
-              <div class="publisher-info" @click.stop="goToUser(item.publisherNickname)">
-                <el-avatar 
-                  :size="24" 
-                  :src="item.publisherAvatar ? serverRoot + item.publisherAvatar : ''"
-                  icon="User"
-                  class="mini-avatar clickable-avatar"
-                />
-                <span class="nickname clickable-nickname">{{ item.publisherNickname || '匿名乐手' }}</span>
-              </div>
-              <span class="contact-hint">查看详情</span>
-            </div>
-          </el-card>
-        </el-col>
-      </el-row>
-      <el-empty v-else description="广场上空荡荡的，去发个帖子招募队友吧？" />
-    </el-main>
-
-    <el-dialog 
-      v-model="showAddDialog" 
-      :title="addForm.type === 'BAND_SEEKING_MEMBER' ? '🎸 发起乐队招募' : '🤘 乐手求组队'" 
-      width="500px" 
-      destroy-on-close
-    >
-      <el-form :model="addForm" label-position="top">
-        <el-form-item label="帖子标题" required>
-          <el-input 
-            v-model="addForm.title" 
-            :placeholder="addForm.type === 'BAND_SEEKING_MEMBER' ? '如：沙河重金属乐队招贝斯' : '如：五年琴龄老贝斯求收留'" 
-          />
-        </el-form-item>
-
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item :label="addForm.type === 'BAND_SEEKING_MEMBER' ? '所需位置' : '我的位置'" required>
-              <el-select v-model="addForm.position" placeholder="请选择" style="width: 100%">
-                <el-option label="贝斯手" value="Bass" />
-                <el-option label="吉他手" value="Guitar" />
-                <el-option label="主唱" value="Vocal" />
-                <el-option label="鼓手" value="Drum" />
-                <el-option label="键盘手" value="Keyboard" />
-                <el-option label="其他" value="Other" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="音乐风格" required>
-              <el-input v-model="addForm.style" placeholder="如：Punk, Metal" />
-            </el-form-item>
+            <!-- 重金属主题卡片 -->
+            <HeavyMetalCard
+              v-if="currentTheme.id === 'heavy-metal'"
+              :item="item"
+              :server-root="serverRoot"
+              @click="goToDetail(item.id)"
+              @like="toggleLike(item.id, 'RECRUITMENT')"
+              @user-click="goToUser(item.publisherNickname)"
+            />
+            <!-- 赛博朋克主题卡片 -->
+            <CyberpunkCard
+              v-else-if="currentTheme.id === 'cyberpunk'"
+              :item="item"
+              :server-root="serverRoot"
+              @click="goToDetail(item.id)"
+              @like="toggleLike(item.id, 'RECRUITMENT')"
+              @user-click="goToUser(item.publisherNickname)"
+            />
+            <!-- 复古霓虹主题卡片 -->
+            <RetroWaveCard
+              v-else-if="currentTheme.id === 'retro-wave'"
+              :item="item"
+              :server-root="serverRoot"
+              @click="goToDetail(item.id)"
+              @like="toggleLike(item.id, 'RECRUITMENT')"
+              @user-click="goToUser(item.publisherNickname)"
+            />
           </el-col>
         </el-row>
+      </div>
+    </main>
 
-        <el-form-item label="技术要求/个人说明">
-          <el-input v-model="addForm.requirements" placeholder="简单描述一下水平或设备要求..." />
+    <!-- 添加招募对话框 -->
+    <el-dialog
+      v-model="showAddDialog"
+      :title="dialogTitle"
+      :width="600"
+      :class="`dialog-${currentTheme.id}`"
+    >
+      <el-form :model="addForm" label-width="120px">
+        <el-form-item label="招募类型">
+          <el-radio-group v-model="addForm.type">
+            <el-radio-button label="BAND_SEEKING_MEMBER">乐队招人</el-radio-button>
+            <el-radio-button label="MEMBER_SEEKING_BAND">个人求队</el-radio-button>
+          </el-radio-group>
+        </el-form-item>
+
+        <el-form-item label="标题" required>
+          <el-input v-model="addForm.title" placeholder="起个响亮的标题" class="metal-input" />
+        </el-form-item>
+
+        <el-form-item label="招募位置" required>
+          <el-input v-model="addForm.position" placeholder="比如：贝斯手" class="metal-input" />
+        </el-form-item>
+
+        <el-form-item label="音乐风格">
+          <el-input v-model="addForm.style" placeholder="比如：重金属、朋克、爵士" class="metal-input" />
+        </el-form-item>
+
+        <el-form-item label="技术要求">
+          <el-input v-model="addForm.requirements" type="textarea" :rows="3" placeholder="有什么要求?" class="metal-input" />
         </el-form-item>
 
         <el-form-item label="详情介绍" required>
-          <el-input v-model="addForm.detail" type="textarea" :rows="4" placeholder="写点好玩的吸引队友吧！" />
+          <el-input v-model="addForm.detail" type="textarea" :rows="4" placeholder="写点好玩的吸引队友吧！" class="metal-input" />
         </el-form-item>
 
         <el-form-item label="联系方式" required>
-          <el-input v-model="addForm.contactInformation" placeholder="微信号或手机号" />
+          <el-input v-model="addForm.contactInformation" placeholder="微信号或手机号" class="metal-input" />
         </el-form-item>
       </el-form>
 
       <template #footer>
-        <el-button @click="showAddDialog = false">取消</el-button>
-        <el-button 
-          :type="addForm.type === 'BAND_SEEKING_MEMBER' ? 'success' : 'warning'" 
+        <el-button @click="showAddDialog = false" :class="`cancel-btn-${currentTheme.id}`">取消</el-button>
+        <el-button
+          :type="addForm.type === 'BAND_SEEKING_MEMBER' ? 'success' : 'warning'"
           @click="submitRecruitment"
+          :class="`submit-btn-${currentTheme.id}`"
         >
-          立即发布
+          🔥 立即发布 🔥
         </el-button>
       </template>
     </el-dialog>
@@ -145,16 +158,26 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Plus, Search } from '@element-plus/icons-vue' 
+import { Plus } from '@element-plus/icons-vue'
 import request from '../api/request'
+import ThemeSwitcher from '../components/ThemeSwitcher.vue'
+import { useTheme } from '../composables/useTheme'
+import HeavyMetalToolbar from '../components/themes/HeavyMetalToolbar.vue'
+import CyberpunkToolbar from '../components/themes/CyberpunkToolbar.vue'
+import RetroWaveToolbar from '../components/themes/RetroWaveToolbar.vue'
+import HeavyMetalCard from '../components/themes/HeavyMetalCard.vue'
+import CyberpunkCard from '../components/themes/CyberpunkCard.vue'
+import RetroWaveCard from '../components/themes/RetroWaveCard.vue'
 
+// 主题系统
+const { currentTheme, loadTheme } = useTheme()
 const router = useRouter()
+
 const recruitments = ref([])
 const showAddDialog = ref(false)
-const searchQuery = ref({ instrument: '', keyword: '' })
 
 // ⚡️ 环境变量与路径处理
 const apiUrl = import.meta.env.VITE_API_BASE_URL || '';
@@ -162,53 +185,81 @@ const serverRoot = apiUrl.replace('/api', '');
 
 // 初始表单状态
 const addForm = ref({
+  type: 'BAND_SEEKING_MEMBER',
   title: '',
   position: '',
   style: '',
   requirements: '',
   detail: '',
-  contactInformation: '',
-  type: '' 
+  contactInformation: ''
 })
 
-const openDialog = (type) => {
-  addForm.value.type = type
-  showAddDialog.value = true
-}
+const dialogTitle = computed(() => {
+  return addForm.value.type === 'BAND_SEEKING_MEMBER' ? '🎸 发布乐队招募' : '🤘 发布个人求队'
+})
 
-// ⚡️ 新增：跳转到用户公开名片页
-const goToUser = (nickname) => {
-  if (!nickname) return;
-  router.push(`/user/${nickname}`);
-}
-
+// 获取招募列表
 const fetchRecruitments = async () => {
   try {
-    const res = await request.get('/recruitments', {
-      params: { 
-        position: searchQuery.value.instrument, 
-        keyword: searchQuery.value.keyword 
-      }
-    })
-    recruitments.value = res
-  } catch (error) { 
-    console.error('获取列表失败', error) 
+    const res = await request.get('/recruitments')
+    recruitments.value = res.sort((a, b) => b.id - a.id)
+  } catch (err) {
+    console.error(err)
   }
 }
 
+// 提交招募
 const submitRecruitment = async () => {
-  if (!addForm.value.title || !addForm.value.detail || !addForm.value.contactInformation) {
-    return ElMessage.warning('请填写必要信息喵')
+  if (!addForm.value.title || !addForm.value.position || !addForm.value.detail || !addForm.value.contactInformation) {
+    ElMessage.warning('请填写所有必填项')
+    return
   }
 
   try {
     await request.post('/recruitments', addForm.value)
     ElMessage.success('发布成功！')
     showAddDialog.value = false
-    addForm.value = { title: '', position: '', style: '', requirements: '', detail: '', contactInformation: '', type: '' }
+    addForm.value = {
+      type: 'BAND_SEEKING_MEMBER',
+      title: '',
+      position: '',
+      style: '',
+      requirements: '',
+      detail: '',
+      contactInformation: ''
+    }
     fetchRecruitments()
-  } catch (err) { 
-    console.error(err) 
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+// 跳转详情
+const goToDetail = (id) => {
+  router.push(`/recruitments/${id}`)
+}
+
+// 查看用户主页
+const goToUser = (nickname) => {
+  if (!nickname) return
+  router.push(`/user/${nickname}`)
+}
+
+// 点赞功能
+const toggleLike = async (id, type) => {
+  try {
+    const item = recruitments.value.find(r => r.id === id)
+    if (item) {
+      item.isLiked = !item.isLiked
+      item.likeCount = item.isLiked ? (item.likeCount || 0) + 1 : Math.max((item.likeCount || 0) - 1, 0)
+    }
+    await request.post(`/likes/${type}/${id}`)
+  } catch (error) {
+    console.error('点赞失败', error)
+    if (item) {
+      item.isLiked = !item.isLiked
+      item.likeCount = item.isLiked ? (item.likeCount || 0) + 1 : Math.max((item.likeCount || 0) - 1, 0)
+    }
   }
 }
 
@@ -217,136 +268,276 @@ const handleLogout = () => {
   router.push('/login')
 }
 
-onMounted(fetchRecruitments)
+onMounted(() => {
+  loadTheme()
+  fetchRecruitments()
+})
 </script>
 
 <style scoped>
-.home-container { min-height: 100vh; background-color: #f5f7fa; }
-.nav-menu { padding: 0 40px; display: flex; align-items: center; border-bottom: 1px solid #dcdfe6; }
-.logo { font-weight: bold; color: #409eff; font-size: 1.2rem; }
-.flex-grow { flex-grow: 1; }
-
-.toolbar { 
-  display: flex; 
-  justify-content: space-between; 
-  margin: 20px 0; 
-  padding: 15px 25px; 
-  background: #fff; 
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+/* === GLOBAL CONTAINER STYLES === */
+.home-container {
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
 }
 
-.recruitment-card { 
-  margin-bottom: 20px; 
-  border-radius: 12px; 
-  border: none; 
-  transition: transform 0.2s;
-}
-.recruitment-card:hover { transform: translateY(-5px); }
-
-.band-card { border-top: 4px solid #67c23a; }
-.member-card { border-top: 4px solid #e6a23c; }
-
-.title-text { font-weight: 600; margin-left: 10px; color: #303133; }
-.info-line { font-size: 14px; margin: 5px 0; color: #606266; }
-.detail-text { 
-  font-size: 13px; 
-  color: #909399; 
-  margin-top: 10px; 
-  line-height: 1.6; 
-  height: 50px; 
-  overflow: hidden; 
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+.main-content {
+  position: relative;
+  z-index: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 20px 60px;
 }
 
-.footer { 
-  border-top: 1px solid #f2f6fc; 
-  padding-top: 12px; 
-  display: flex; 
-  justify-content: space-between; 
+.content-grid {
+  margin-top: 40px;
+}
+
+.toolbar-wrapper {
+  margin-bottom: 30px;
+}
+
+/* === NAVBAR BASE STYLES === */
+.navbar {
+  position: relative;
+  z-index: 100;
+  padding: 0;
+}
+
+.nav-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
   align-items: center;
-  font-size: 12px; 
+  justify-content: space-between;
+  padding: 15px 30px;
 }
 
-.publisher-info {
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.logo:hover {
+  transform: scale(1.05);
+}
+
+.logo-icon {
+  font-size: 28px;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.logo-text {
+  font-family: 'Impact', 'Arial Black', sans-serif;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  transition: all 0.3s ease;
+}
+
+.logo-sub {
+  font-family: 'Arial Black', sans-serif;
+  font-size: 12px;
+  color: #8c8c8c;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-left: 8px;
+}
+
+.nav-menu {
+  display: flex;
+  gap: 40px;
+}
+
+.nav-item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
-  cursor: pointer; /* ⚡️ 鼠标手型暗示可点 */
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 4px;
 }
 
-.clickable-avatar:hover {
-  transform: scale(1.1);
-  transition: all 0.2s;
+.nav-item:hover {
+  background: rgba(255, 69, 0, 0.1);
 }
 
-.clickable-nickname:hover {
-  color: #409eff;
-  text-decoration: underline;
+.nav-icon {
+  font-size: 18px;
 }
 
-.mini-avatar {
-  border: 1px solid #eee;
-}
-
-.nickname {
-  color: #606266;
-  max-width: 80px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.contact-hint { color: #909399; font-style: italic; }
-
-
-
-
-/* 确保菜单项文字颜色和 Logo 搭配 */
-.nav-menu .el-menu-item {
-  font-size: 15px;
-  font-weight: 500;
-  margin-left: 20px; /* 和 Logo 拉开一点距离 */
-}
-
-.nav-menu .el-menu-item {
-  /* 1. 缩窄色块：减少内部左右空间 */
-  padding: 0 12px !important; 
-  
-  /* 2. 拉开距离：增加外部左右间距 */
-  margin: 0 200px !important; 
-  
-  /* 3. 高度微调：让色块看起来更精致 */
-  height: 34px !important;
-  line-height: 34px !important;
-  align-self: center; /* 在导航栏垂直居中 */
-  
+.nav-text {
+  font-family: 'Arial Black', sans-serif;
   font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  border-bottom: none !important; /* 去掉 ElementPlus 默认的底部边框线 */
+  color: #d4d4d4;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
-/* 4. 悬停效果：做一个精致的胶囊形状 */
-.nav-menu .el-menu-item:hover {
-  background-color: #ecf5ff !important; /* 淡淡的蓝色 */
-  color: #409eff !important;
-  border-radius: 17px; /* 高度的一半，形成完美的圆角胶囊 */
+.nav-underline {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: #ff4500;
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
 }
 
-/* 5. 选中状态：去掉默认的下划线，保持胶囊样式的统一 */
-.nav-menu .el-menu-item.is-active {
-  background-color: #409eff !important;
-  color: #fff !important;
-  border-radius: 17px;
-  border-bottom: none !important;
+.nav-item:hover .nav-underline {
+  width: 80%;
 }
 
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
 
+.user-dropdown {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid #2d2d2d;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
 
+.user-dropdown:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #ff4500;
+  box-shadow: 0 0 15px rgba(255, 69, 0, 0.3);
+}
 
+.user-icon {
+  font-size: 18px;
+}
+
+.user-text {
+  font-family: 'Arial Black', sans-serif;
+  font-size: 14px;
+  color: #d4d4d4;
+}
+
+.dropdown-arrow {
+  font-size: 10px;
+  color: #d4d4d4;
+}
+
+/* === HEAVY METAL THEME STYLES === */
+.theme-heavy-metal.navbar {
+  background: rgba(10, 10, 10, 0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 3px solid transparent;
+  border-image: linear-gradient(90deg, transparent, #ff4500, transparent) 1;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 69, 0, 0.2);
+}
+
+.theme-heavy-metal.logo-text {
+  background: linear-gradient(45deg, #ff4500 0%, #dc143c 50%, #ffa500 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-family: 'Impact', 'Arial Black', sans-serif;
+}
+
+/* === CYBERPUNK THEME STYLES === */
+.theme-cyberpunk.navbar {
+  background: rgba(10, 10, 26, 0.9);
+  backdrop-filter: blur(20px);
+  border-bottom: 2px solid #00ffff;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 255, 255, 0.3);
+  position: relative;
+}
+
+.theme-cyberpunk.navbar::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #00ffff, #ff1493, #00ffff, transparent);
+  animation: cyber-scan 3s linear infinite;
+}
+
+.theme-cyberpunk.logo-text {
+  color: #00ffff;
+  font-family: 'Courier New', monospace;
+  text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+  letter-spacing: 4px;
+}
+
+.theme-cyberpunk .nav-item:hover {
+  background: rgba(0, 255, 255, 0.1);
+}
+
+.theme-cyberpunk .nav-underline {
+  background: #00ffff;
+}
+
+/* === RETRO WAVE THEME STYLES === */
+.theme-retro-wave.navbar {
+  background: linear-gradient(180deg, rgba(26, 10, 46, 0.95), rgba(26, 10, 46, 0.8));
+  backdrop-filter: blur(20px);
+  border-bottom: 4px solid transparent;
+  border-image: linear-gradient(90deg, #ff1493, #9400d3, #00bfff, #ff1493) 1;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8), 0 0 40px rgba(255, 20, 147, 0.4);
+}
+
+.theme-retro-wave.logo-text {
+  color: #ff1493;
+  font-family: 'Arial Black', sans-serif;
+  text-shadow: 0 0 10px #ff1493, 2px 2px 0 #9400d3;
+  letter-spacing: 3px;
+}
+
+.theme-retro-wave .nav-item:hover {
+  background: rgba(255, 20, 147, 0.1);
+}
+
+.theme-retro-wave .nav-underline {
+  background: #ff1493;
+}
+
+/* === ANIMATIONS === */
+@keyframes pulse-glow {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 10px rgba(255, 69, 0, 0.5));
+  }
+  50% {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 20px rgba(255, 69, 0, 0.8));
+  }
+}
+
+@keyframes cyber-scan {
+  0% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
+}
+
+.theme-retro-wave.logo-text {
+  color: #ff1493;
+  font-family: 'Arial Black', sans-serif;
+  text-shadow: 0 0 10px #ff1493, 2px 2px 0 #9400d3;
+  letter-spacing: 3px;
+}
+
+/* === ANIMATIONS === */
+@keyframes cyber-scan {
+  0% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
+}
 </style>
-
-

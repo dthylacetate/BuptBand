@@ -15,9 +15,14 @@ const service = axios.create({
 service.interceptors.request.use(
   config => {
     const token = localStorage.getItem('token')
-    if (token && token !== 'undefined') {
+    console.log('请求拦截器 - 当前token:', token)
+    console.log('请求拦截器 - 请求URL:', config.url)
+    if (token && token !== 'undefined' && token !== 'null') {
       // 给每个请求都加上 Bearer Token，后端 Spring Security 才能识别
       config.headers['Authorization'] = `Bearer ${token}`
+      console.log('请求拦截器 - 已添加Authorization头')
+    } else {
+      console.log('请求拦截器 - 没有有效token，跳过添加Authorization头')
     }
     return config
   },
